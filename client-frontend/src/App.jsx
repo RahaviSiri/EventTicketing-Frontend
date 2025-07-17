@@ -1,9 +1,16 @@
-import React from 'react'
+import React, { useContext } from 'react';
+import { AppContext } from './context/AppContext.jsx';
+import OrganizerLayout from './layouts/OrganizerLayout.jsx';
+import AttendeeLayout from './layouts/AttendeeLayout.jsx';
 
 const App = () => {
-  return (
-    <div>App</div>
-  )
-}
+  const { role } = useContext(AppContext);
 
-export default App
+  if (role === "ORGANIZER") {
+    return <OrganizerLayout />;
+  } else if (role === "ATTENDEE") {
+    return <AttendeeLayout />;
+  }
+};
+
+export default App;
