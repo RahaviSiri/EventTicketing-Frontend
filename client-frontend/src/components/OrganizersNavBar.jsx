@@ -27,6 +27,11 @@ const navItems = [
     },
 ];
 
+const handleLogout = () => {
+    localStorage.removeItem("EventToken");
+    window.location.href = "/login"; 
+};
+
 const OrganizerNavBar = () => {
 
     const [menuOpen, setMenuOpen] = useState(false);
@@ -70,7 +75,7 @@ const OrganizerNavBar = () => {
                 </div>
 
                 {/* Logout */}
-                <button className="flex items-center gap-1 text-sm text-gray-700 hover:text-red-600">
+                <button onClick={handleLogout} className="flex items-center gap-1 text-sm text-gray-700 hover:text-red-600">
                     <ArrowRightOnRectangleIcon className="h-5 w-5" />
                     <span className="hidden md:inline">Logout</span>
                 </button>

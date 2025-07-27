@@ -3,11 +3,11 @@ import { NavLink } from 'react-router-dom';
 import { HomeIcon, CalendarIcon, DocumentTextIcon, QrCodeIcon, PlusCircleIcon } from '@heroicons/react/24/outline';
 
 const navItems = [
-  { path: '/', icon: <HomeIcon className="h-6 w-6" />, label: 'Dashboard' },
-  { path: '/addEvent', icon: <PlusCircleIcon className="h-6 w-6" />, label: 'Add Event' },
-  { path: '/orderDetails', icon: <CalendarIcon className="h-6 w-6" />, label: 'Orders' },
-  { path: '/report', icon: <DocumentTextIcon className="h-6 w-6" />, label: 'Report Generate' },
-  { path: '/scanQR', icon: <QrCodeIcon className="h-6 w-6" />, label: 'Scan QR' },
+  { path: '/organizers', icon: <HomeIcon className="h-6 w-6" />, label: 'Dashboard' },
+  { path: '/organizers/addEvent', icon: <PlusCircleIcon className="h-6 w-6" />, label: 'Add Event' },
+  { path: '/organizers/orderDetails', icon: <CalendarIcon className="h-6 w-6" />, label: 'Orders' },
+  { path: '/organizers/report', icon: <DocumentTextIcon className="h-6 w-6" />, label: 'Report Generate' },
+  { path: '/organizers/scanQR', icon: <QrCodeIcon className="h-6 w-6" />, label: 'Scan QR' },
 ];
 
 const SideBar = () => {
