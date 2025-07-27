@@ -7,10 +7,13 @@ export const AppContext = createContext();
 export const AppContextProvider = ({children}) => {
 
     const [role,setRole] = useState("ORGANIZER");
+    const [token, setToken] = useState(localStorage.getItem("EventToken") || null);
 
     const value = {
         role,
         setRole,
+        setToken,
+        token,
 
     }
 
