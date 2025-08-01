@@ -1,24 +1,47 @@
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Node.js / React frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.vite/
+frontend/.eslintcache
+
+# Spring Boot / Java backend
+backend/target/
+backend/.classpath
+backend/.project
+backend/.settings/
+backend/.idea/
+backend/.vscode/
+backend/*.iml
+backend/.env
+
+# IntelliJ IDEA & VS Code
+*.iml
+.idea/
+.vscode/
+
 # Logs
-logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# OS-specific
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# Backup files
+*.bak
+*.swp
+*~
+
+# Optional: Ignore test coverage reports
+coverage/
+frontend/coverage/
+backend/coverage/
