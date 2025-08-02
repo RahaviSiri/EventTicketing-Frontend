@@ -2,13 +2,14 @@ import React, { useContext } from 'react';
 import { AppContext } from './context/AppContext.jsx';
 import OrganizerLayout from './layouts/OrganizerLayout.jsx';
 import AttendeeLayout from './layouts/AttendeeLayout.jsx';
-import Login from './pages/Login.jsx';
+import Home from './pages/User/Home.jsx';
 
 const App = () => {
   const { role } = useContext(AppContext);
+  console.log(role); // add this temporary log
 
   if (!role) {
-    return <Login />;
+    return <Home />;
   }
 
   if (role === "ORGANIZER") {
