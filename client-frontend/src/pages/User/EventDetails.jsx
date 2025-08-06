@@ -1,33 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { getEventDetails } from '../../mock/mockApi';
 
 const EventDetails = () => {
-  const { eventId } = useParams();
-  const navigate = useNavigate();
+  const { id } = useParams();
   const [event, setEvent] = useState(null);
 
   useEffect(() => {
-    axios.get(`http://localhost:8080/api/events/${eventId}`)
-      .then(res => setEvent(res.data))
-      .catch(err => console.error(err));
-  }, [eventId]);
+    getEventDetails(id).then(setEvent);
+  }, [id]);
 
-  if (!event) return <div>Loading...</div>;
+  if (!event) return <p>Loading...</p>;
 
   return (
-    <div className="max-w-3xl mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4">{event.name}</h2>
-      <p><strong>Date:</strong> {new Date(event.eventDate).toLocaleString()}</p>
-      <p><strong>Venue:</strong> {event.venue}</p>
-      <p className="mt-4">{event.description}</p>
-
-      <button
-        className="mt-6 bg-indigo-600 text-white px-4 py-2 rounded"
-        onClick={() => navigate(`/events/${eventId}/attendee`)}
-      >
-        Next: Attendee Info
-      </button>
+    <div>
+      <h2>{event.title}</h2>
+      <p>{event.description}</p>
+      <p>Date: {event.date}</p>
+      <Link to={`/event/${event.id}/book`}>
+        <button>Book Ticket</button>
+      </Link>
     </div>
   );
 };

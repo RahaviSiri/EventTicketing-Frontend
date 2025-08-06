@@ -1,20 +1,37 @@
 import React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { getSeatMap, bookTicket } from '../../mock/mockApi';
+import SeatMapSVG from '../../components/SeatMapSVG';
 
 const SeatSelection = () => {
-  const { eventId } = useParams();
-  const navigate = useNavigate();
+  const { id } = useParams();
+  const [form, setForm] = useState({ name: '', email: '' });
+  const [seats, setSeats] = useState([]);
+  const [selected, setSelected] = useState([]);
 
-  const handleSelect = () => {
-    localStorage.setItem('selectedSeat', 'A1');
-    navigate(`/events/${eventId}/payment`);
+  useEffect(() => {
+    getSeatMap(id).then(setSeats);
+  }, [id]);
+
+  const toggleSeat = (seatId) => {
+    setSelected(prev =>
+      prev.includes(seatId) ? prev.filter(s => s !== seatId) : [...prev, seatId]
+    );
+  };
+
+  const handleSubmit = async () => {
+    await bookTicket({ ...form, eventId: id, selectedSeats: selected });
+    alert("Booking Confirmed!");
   };
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      <h2 className="text-xl font-bold mb-4">Seat Selection</h2>
-      <p>Seat A1 is available.</p>
-      <button onClick={handleSelect} className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded">Next: Payment</button>
+    <div>
+      <input placeholder="Name" name="name" onChange={e => setForm({ ...form, name: e.target.value })} />
+      <input placeholder="Email" name="email" onChange={e => setForm({ ...form, email: e.target.value })} />
+      <SeatMapSVG seats={seats} selected={selected} onToggle={toggleSeat} />
+      <button onClick={handleSubmit}>Confirm Booking</button>
     </div>
   );
 };
