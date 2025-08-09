@@ -10,6 +10,8 @@ import Report from '../pages/Organizer/Report.jsx';
 import ScanQR from '../pages/Organizer/ScanQR.jsx';
 import Login from '../pages/Login.jsx';
 import OAuthSuccess from '../pages/Organizer/OAuthSuccess.jsx';
+import EventsList from '../pages/Organizer/EventsList.jsx';
+import EventDetailsPage from '../pages/Organizer/EventDetailsPage.jsx';
 
 const OrganizerLayout = () => {
 
@@ -24,11 +26,14 @@ const OrganizerLayout = () => {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/oauth-success" element={<OAuthSuccess />} />
-            <Route path="/organizers" element={<Dashboard />} />
-            <Route path="/organizers/addEvent" element={<AddEvent />} />
+            <Route path="/organizers/home" element={<Dashboard />} />
+            <Route path="/organizers/viewEvent" element={<EventsList />} />
             <Route path="/organizers/orderDetails" element={<OrderDetails />} />
             <Route path="/organizers/report" element={<Report />} />
             <Route path="/organizers/scanQR" element={<ScanQR />} />
+            <Route path="/organizers/addEvent" element={<AddEvent />} />
+            {/* <Route path="/organizers/eventDetails/:eventId" element={<EventDetailsPage />} /> */}
+            <Route path="/organizers/eventDetails" element={<EventDetailsPage />} />
           </Routes>
         </main>
       </div>
