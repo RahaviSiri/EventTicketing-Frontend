@@ -3,8 +3,8 @@ import { NavLink } from 'react-router-dom';
 import { HomeIcon, CalendarIcon, DocumentTextIcon, QrCodeIcon, PlusCircleIcon } from '@heroicons/react/24/outline';
 
 const navItems = [
-  { path: '/organizers', icon: <HomeIcon className="h-6 w-6" />, label: 'Dashboard' },
-  { path: '/organizers/addEvent', icon: <PlusCircleIcon className="h-6 w-6" />, label: 'Add Event' },
+  { path: '/organizers/home', icon: <HomeIcon className="h-6 w-6" />, label: 'Dashboard' },
+  { path: '/organizers/viewEvent', icon: <PlusCircleIcon className="h-6 w-6" />, label: 'View Events' },
   { path: '/organizers/orderDetails', icon: <CalendarIcon className="h-6 w-6" />, label: 'Orders' },
   { path: '/organizers/report', icon: <DocumentTextIcon className="h-6 w-6" />, label: 'Report Generate' },
   { path: '/organizers/scanQR', icon: <QrCodeIcon className="h-6 w-6" />, label: 'Scan QR' },
@@ -15,7 +15,7 @@ const SideBar = () => {
     <div className={`
           fixed z-40 lg:relative transition-transform duration-300 -translate-x-full
           lg:translate-x-0 
-          bg-[#2d545e] text-white w-64 lg:w-20 h-full p-4 flex flex-col
+          bg-[#8076a3] text-white w-64 lg:w-20 h-full p-4 flex flex-col
         `}
         // lg:translate-x-0 means on large screens and above, always visible (no translate).
     >
@@ -27,7 +27,7 @@ const SideBar = () => {
             to={item.path}
             className={({ isActive }) =>
               `group flex items-center gap-3 px-3 py-2 rounded-md transition-colors
-                 ${isActive ? 'bg-[#c89666]' : 'hover:bg-[#e1b382]'}`
+                 ${isActive ? 'bg-[#feb300]' : null}`
             }
           >
             {item.icon}
