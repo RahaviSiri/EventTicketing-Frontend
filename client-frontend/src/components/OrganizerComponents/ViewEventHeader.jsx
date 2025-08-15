@@ -1,7 +1,9 @@
 import React from 'react';
 import colors from "../../constants/colors.js";
+import { useNavigate } from 'react-router-dom';
 
 const ViewEventHeader = () => {
+    const naviagte = useNavigate();
     return (
         <div className="p-4">
             <h1 className="text-xl lg:text-3xl text-center font-bold" style={{ color: colors.primary }}>View Events</h1>
@@ -20,6 +22,7 @@ const ViewEventHeader = () => {
 
                 {/* Create Event button on right */}
                 <button
+                    onClick={() => naviagte('/organizers/addEvent')}
                     style={{ backgroundColor: colors.primary }}
                     className="text-white text-sm lg:text-md px-4 py-2 rounded-md hover:bg-[#bfb1f2] transition"
                 >
