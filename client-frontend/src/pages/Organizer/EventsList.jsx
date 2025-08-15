@@ -9,31 +9,54 @@ import Typography from '@mui/material/Typography';
 import ShareIcon from '@mui/icons-material/Share';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import ViewEventHeader from '../../components/OrganizerComponents/ViewEventHeader';
 import { useNavigate } from 'react-router-dom';
 
 const EventsList = () => {
     const [events, setEvents] = useState([]);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [selectedEvent, setSelectedEvent] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
         fetch('http://localhost:8089/api/events')
             .then((res) => {
-                if (!res.ok) {
-                    throw new Error('Failed to fetch events');
-                }
+                if (!res.ok) throw new Error('Failed to fetch events');
                 return res.json();
             })
-            .then((data) => {
-                setEvents(data);
-            })
-            .catch((error) => {
-                console.error('Error fetching events:', error);
-            });
+            .then((data) => setEvents(data))
+            .catch((error) => console.error('Error fetching events:', error));
     }, []);
 
-    const handleClick = (event) => {
+    const handleCardClick = (event) => {
         navigate(`/organizers/eventDetails`, { state: { event } });
+    };
+
+    const handleMenuOpen = (e, evt) => {
+        e.stopPropagation(); 
+        setAnchorEl(e.currentTarget);
+        setSelectedEvent(evt);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+        setSelectedEvent(null);
+    };
+
+    const handleUpdate = () => {
+        navigate(`/organizers/updateEvent/${selectedEvent.id}`);
+        handleMenuClose();
+    };
+
+    const handleDelete = () => {
+        fetch(`http://localhost:8089/api/events/${selectedEvent.id}`, {
+            method: 'DELETE',
+        })
+        .then(() => setEvents(events.filter(e => e.id !== selectedEvent.id)))
+        .catch((err) => console.error(err));
+        handleMenuClose();
     };
 
     return (
@@ -44,13 +67,28 @@ const EventsList = () => {
                     <Card
                         key={event.id}
                         sx={{ maxWidth: 350, backgroundColor: '#faf8f5', cursor: 'pointer' }}
-                        onClick={() => handleClick(event)}
                     >
                         <CardHeader
                             action={
-                                <IconButton aria-label="settings" sx={{ padding: 0.5 }}>
-                                    <MoreVertIcon fontSize="small" />
-                                </IconButton>
+                                <>
+                                    <IconButton
+                                        aria-label="settings"
+                                        sx={{ padding: 0.5 }}
+                                        onClick={(e) => handleMenuOpen(e, event)}
+                                    >
+                                        <MoreVertIcon fontSize="small" />
+                                    </IconButton>
+                                    <Menu
+                                        anchorEl={anchorEl}
+                                        open={Boolean(anchorEl)}
+                                        onClose={handleMenuClose}
+                                        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                                        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                                    >
+                                        <MenuItem onClick={handleUpdate}>Update</MenuItem>
+                                        <MenuItem onClick={handleDelete}>Delete</MenuItem>
+                                    </Menu>
+                                </>
                             }
                             title={event.name}
                             subheader={new Date(event.startDate).toLocaleDateString(undefined, {
@@ -66,7 +104,14 @@ const EventsList = () => {
                             }}
                             sx={{ pb: 1.5 }}
                         />
-                        <CardMedia component="img" height="140" image={event.imageUrl} alt={event.name} />
+                        <CardMedia
+                            component="img"
+                            height="140"
+                            image={event.imageUrl}
+                            alt={event.name}
+                            onClick={() => handleCardClick(event)}
+                            sx={{ cursor: 'pointer', objectFit: 'cover' }}
+                        />
                         <CardContent sx={{ pt: 1, pb: 1 }}>
                             <Typography variant="body2" sx={{ color: 'text.secondary', pt: 1, mb: 0 }}>
                                 {event.description}

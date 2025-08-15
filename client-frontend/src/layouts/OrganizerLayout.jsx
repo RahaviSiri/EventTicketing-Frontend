@@ -32,6 +32,7 @@ const OrganizerLayout = () => {
             <Route path="/organizers/report" element={<Report />} />
             <Route path="/organizers/scanQR" element={<ScanQR />} />
             <Route path="/organizers/addEvent" element={<AddEvent />} />
+            <Route path="/organizers/updateEvent/:id" element={<AddEvent />} />
             {/* <Route path="/organizers/eventDetails/:eventId" element={<EventDetailsPage />} /> */}
             <Route path="/organizers/eventDetails" element={<EventDetailsPage />} />
           </Routes>
