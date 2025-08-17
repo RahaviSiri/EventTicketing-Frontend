@@ -2,30 +2,36 @@ import React, { useState, useRef, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { HomeIcon, CalendarIcon, DocumentTextIcon, QrCodeIcon, PlusCircleIcon, Squares2X2Icon,
 ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
+import colors from "../constants/colors";
 
 const navItems = [
-    { path: "/", icon: <HomeIcon className="h-6 w-6" />, label: "Dashboard" },
+    { path: "/organizers/home", icon: <HomeIcon className="h-6 w-6" />, label: "Dashboard" },
     {
-        path: "/addEvent",
+        path: "/organizers/viewEvent",
         icon: <PlusCircleIcon className="h-6 w-6" />,
-        label: "Add Event",
+        label: "View Event",
     },
     {
-        path: "/orderDetails",
+        path: "/organizers/orderDetails",
         icon: <CalendarIcon className="h-6 w-6" />,
         label: "Orders",
     },
     {
-        path: "/report",
+        path: "/organizers/report",
         icon: <DocumentTextIcon className="h-6 w-6" />,
         label: "Report Generate",
     },
     {
-        path: "/scanQR",
+        path: "/organizers/scanQR",
         icon: <QrCodeIcon className="h-6 w-6" />,
         label: "Scan QR",
     },
 ];
+
+const handleLogout = () => {
+    localStorage.removeItem("EventToken");
+    window.location.href = "/login"; 
+};
 
 const OrganizerNavBar = () => {
 
@@ -50,8 +56,8 @@ const OrganizerNavBar = () => {
         <header className="w-screen bg-white px-4 py-3 flex justify-between items-center shadow z-40 relative">
             {/* Logo */}
             <div className="flex items-center gap-2 font-bold text-xl">
-                <span className="text-[#2d545e]">Event</span>
-                <span className="text-[#c89666]">Ease</span>
+                <span style={{color: colors.primary}}>Event</span>
+                <span style={{color: colors.accent}}>Ease</span>
             </div>
 
             {/* Right section */}
@@ -70,7 +76,7 @@ const OrganizerNavBar = () => {
                 </div>
 
                 {/* Logout */}
-                <button className="flex items-center gap-1 text-sm text-gray-700 hover:text-red-600">
+                <button onClick={handleLogout} className="flex items-center gap-1 text-sm text-gray-700 hover:text-red-600">
                     <ArrowRightOnRectangleIcon className="h-5 w-5" />
                     <span className="hidden md:inline">Logout</span>
                 </button>

@@ -6,13 +6,16 @@ export const AppContext = createContext();
 // Create the context Provider
 export const AppContextProvider = ({children}) => {
 
-    const [role,setRole] = useState("ATTENDEE");
-    // const [role,setRole] = useState("ORGANIZER");
+
+    const [role,setRole] = useState("ORGANIZER");
+    const [token, setToken] = useState(localStorage.getItem("EventToken") || null);
 
 
     const value = {
         role,
         setRole,
+        setToken,
+        token,
 
     }
 
