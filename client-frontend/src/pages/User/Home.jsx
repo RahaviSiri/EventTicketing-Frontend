@@ -6,16 +6,16 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
 
   const featuredEvents = [
-    {
-      id: 1,
-      title: "Colombo Tech Summit 2024",
-      date: "2026-03-15",
-      location: "Colombo, Sri Lanka",
-      image:
-        "https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg?auto=compress&cs=tinysrgb&w=800",
-      price: 1500, // Rs.
-      category: "Technology",
-    },
+    // {
+    //   id: 1,
+    //   title: "Colombo Tech Summit 2024",
+    //   date: "2026-03-15",
+    //   location: "Colombo, Sri Lanka",
+    //   image:
+    //     "https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg?auto=compress&cs=tinysrgb&w=800",
+    //   price: 1500, // Rs.
+    //   category: "Technology",
+    // },
     {
       id: 2,
       title: "Colombo Music Festival",
@@ -127,7 +127,7 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Why Choose EventFlow?
+              Why Choose EventEase?
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               We provide a complete event management solution with
@@ -143,10 +143,7 @@ const Home = () => {
               <h3 className="text-xl font-semibold mb-2">
                 Interactive Seat Maps
               </h3>
-              <p className="text-gray-600">
-                Choose your perfect seat with our SVG-based interactive
-                seating charts
-              </p>
+              
             </div>
 
             <div className="text-center p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
@@ -154,10 +151,7 @@ const Home = () => {
                 <Calendar className="h-8 w-8 text-green-600" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Smart Reminders</h3>
-              <p className="text-gray-600">
-                Never miss an event with automated email reminders and
-                notifications
-              </p>
+             
             </div>
 
             <div className="text-center p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
@@ -165,9 +159,7 @@ const Home = () => {
                 <Users className="h-8 w-8 text-purple-600" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Easy Management</h3>
-              <p className="text-gray-600">
-                Comprehensive dashboards for organizers and attendees alike
-              </p>
+              
             </div>
           </div>
         </div>

@@ -7,6 +7,7 @@ import EventDetails from '../pages/User/EventDetails.jsx';
 import SeatSelection from '../pages/User/SeatSelection.jsx';
 import Payment from '../pages/User/Payment.jsx';
 import Home from '../pages/User/Home.jsx';
+import Login from '../pages/Login.jsx';
 
 const AttendeeLayout = () => {
   return (
@@ -20,6 +21,9 @@ const AttendeeLayout = () => {
         <Route path="/events/:eventId/attendee" element={<InputattendeeData />} />
         <Route path="/events/:eventId/seats" element={<SeatSelection />} />
         <Route path="/events/:eventId/payment" element={<Payment />} />
+
+                    <Route path="/login" element={<Login />} />
+
         {/* <Route path="/events/:eventId/confirmation" element={<ConfirmationPage />} /> */}
           </Routes>
         </main>

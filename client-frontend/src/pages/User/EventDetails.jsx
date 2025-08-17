@@ -12,23 +12,23 @@ const EventDetail = () => {
   useEffect(() => {
     // Mock API call - replace with your backend API
     const mockEvent = {
-      id: parseInt(id || '1'),
-      title: 'Colombo Tech Summit 2024',
+      id: 2,
+      title: 'Colombo Music Festival',
       description:
-        'Join us for the biggest technology conference of the year! Featuring keynote speakers, hands-on workshops, and networking opportunities.',
-      date: '2026-03-15',
-      time: '09:00 AM',
+        'Experience the best music festival in Colombo! Featuring top local and international artists, food stalls, and fun activities.',
+      date: '2026-06-20',
+      time: '04:00 PM',
       location: 'Colombo, Sri Lanka',
-      venue: 'BMICH Conference Hall',
+      venue: 'Galle Face Green',
       image:
-        'https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg?auto=compress&cs=tinysrgb&w=1200',
-      price: 1500,
-      category: 'Technology',
-      rating: 4.7,
-      totalSeats: 500,
-      availableSeats: 250,
-      organizer: 'TechEvents Inc.',
-      features: ['Keynote Speakers', 'Workshops', 'Networking', 'Certificate', 'Swag Bag'],
+        'https://images.pexels.com/photos/1190298/pexels-photo-1190298.jpeg?auto=compress&cs=tinysrgb&w=800',
+      price: 1200,
+      category: 'Music',
+      rating: 4.5,
+      totalSeats: 1000,
+      availableSeats: 600,
+      organizer: 'MusicEvents Ltd.',
+      features: ['Live Bands', 'Food Stalls', 'Dance Performances', 'Merchandise'],
     };
 
     setTimeout(() => {
@@ -41,18 +41,7 @@ const EventDetail = () => {
   //   navigate(`/events/${id}/seats`);
   // };
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: event?.title,
-        text: event?.description,
-        url: window.location.href,
-      });
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      alert('Link copied to clipboard!');
-    }
-  };
+  
 
   if (loading) {
     return (
@@ -96,22 +85,7 @@ const EventDetail = () => {
               </div>
             </div>
 
-            <div className="flex items-center space-x-4">
-              {/* <button
-                onClick={() => setLiked(!liked)}
-                className={`p-3 rounded-full transition-colors ${
-                  liked ? 'bg-red-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <Heart className={`h-6 w-6 ${liked ? 'fill-current' : ''}`} />
-              </button> */}
-              {/* <button
-                onClick={handleShare}
-                className="p-3 bg-white text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <Share className="h-6 w-6" />
-              </button> */}
-            </div>
+           
           </div>
         </div>
       </div>
@@ -207,9 +181,7 @@ const EventDetail = () => {
               Select Seats & Book Now
             </button> */}
 
-            <p className="text-center text-sm text-gray-500">
-              Free cancellation up to 24 hours before the event
-            </p>
+            
           </div>
         </div>
       </div>
