@@ -10,8 +10,8 @@ interface Event {
   image: string;
   price: number;
   category: string;
-  rating: number;
-  availableSeats: number;
+  rating?: number;
+  availableSeats?: number;
 }
 
 const Events: React.FC = () => {
@@ -25,59 +25,52 @@ const Events: React.FC = () => {
     const mockEvents: Event[] = [
       {
         id: 1,
-        title: 'Tech Conference 2024',
-        date: '2024-03-15',
-        location: 'San Francisco, CA',
-        image: 'https://images.pexels.com/photos/2774556/pexels-photo-2774556.jpeg?auto=compress&cs=tinysrgb&w=800',
-        price: 299,
-        category: 'Technology',
-        rating: 4.8,
-        availableSeats: 250
+        title: "Colombo Tech Summit 2026",
+        date: "2026-03-15",
+        location: "Colombo, Sri Lanka",
+        image:
+          "https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg?auto=compress&cs=tinysrgb&w=800",
+        price: 1500,
+        category: "Technology",
+        rating: 4.5,
+        availableSeats: 50,
       },
       {
         id: 2,
-        title: 'Music Festival Summer',
-        date: '2024-06-20',
-        location: 'Austin, TX',
-        image: 'https://images.pexels.com/photos/1190298/pexels-photo-1190298.jpeg?auto=compress&cs=tinysrgb&w=800',
-        price: 149,
-        category: 'Music',
-        rating: 4.9,
-        availableSeats: 1500
+        title: "Colombo Music Festival",
+        date: "2026-06-20",
+        location: "Colombo, Sri Lanka",
+        image:
+          "https://images.pexels.com/photos/1190298/pexels-photo-1190298.jpeg?auto=compress&cs=tinysrgb&w=800",
+        price: 1200,
+        category: "Music",
+        rating: 4.7,
+        availableSeats: 100,
       },
       {
         id: 3,
-        title: 'Art Gallery Opening',
-        date: '2024-04-10',
-        location: 'New York, NY',
-        image: 'https://images.pexels.com/photos/1269968/pexels-photo-1269968.jpeg?auto=compress&cs=tinysrgb&w=800',
-        price: 75,
-        category: 'Art',
+        title: "Jaffna Music Festival",
+        date: "2026-07-05",
+        location: "Jaffna, Sri Lanka",
+        image:
+          "https://images.pexels.com/photos/164821/pexels-photo-164821.jpeg?auto=compress&cs=tinysrgb&w=800",
+        price: 1000,
+        category: "Music",
         rating: 4.6,
-        availableSeats: 100
+        availableSeats: 80,
       },
       {
         id: 4,
-        title: 'Business Summit',
-        date: '2024-05-08',
-        location: 'Chicago, IL',
-        image: 'https://images.pexels.com/photos/2608517/pexels-photo-2608517.jpeg?auto=compress&cs=tinysrgb&w=800',
-        price: 199,
-        category: 'Business',
-        rating: 4.7,
-        availableSeats: 300
+        title: "Galle Literary Festival",
+        date: "2026-01-20",
+        location: "Galle, Sri Lanka",
+        image:
+          "https://images.pexels.com/photos/1269968/pexels-photo-1269968.jpeg?auto=compress&cs=tinysrgb&w=800",
+        price: 800,
+        category: "Literature",
+        rating: 4.8,
+        availableSeats: 40,
       },
-      {
-        id: 5,
-        title: 'Food & Wine Festival',
-        date: '2024-07-15',
-        location: 'Napa Valley, CA',
-        image: 'https://images.pexels.com/photos/1267320/pexels-photo-1267320.jpeg?auto=compress&cs=tinysrgb&w=800',
-        price: 89,
-        category: 'Food',
-        rating: 4.5,
-        availableSeats: 500
-      }
     ];
 
     setTimeout(() => {
@@ -160,10 +153,12 @@ const Events: React.FC = () => {
                     <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
                       {event.category}
                     </span>
-                    <div className="flex items-center">
-                      <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                      <span className="text-sm text-gray-600 ml-1">{event.rating}</span>
-                    </div>
+                    {event.rating && (
+                      <div className="flex items-center">
+                        <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                        <span className="text-sm text-gray-600 ml-1">{event.rating}</span>
+                      </div>
+                    )}
                   </div>
                   <h3 className="text-xl font-semibold mb-2 text-gray-900">
                     {event.title}
@@ -178,11 +173,13 @@ const Events: React.FC = () => {
                   </div>
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-2xl font-bold text-green-600">
-                      ${event.price}
+                      Rs. {event.price.toLocaleString("en-LK")}
                     </span>
-                    <span className="text-sm text-gray-500">
-                      {event.availableSeats} seats left
-                    </span>
+                    {event.availableSeats !== undefined && (
+                      <span className="text-sm text-gray-500">
+                        {event.availableSeats} seats left
+                      </span>
+                    )}
                   </div>
                   <Link
                     to={`/events/${event.id}`}

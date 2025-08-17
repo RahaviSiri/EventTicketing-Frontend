@@ -6,7 +6,7 @@ import InputattendeeData from '../pages/User/InputattendeeData.jsx';
 import EventDetails from '../pages/User/EventDetails.jsx';
 import SeatSelection from '../pages/User/SeatSelection.jsx';
 import Payment from '../pages/User/Payment.jsx';
-
+import Home from '../pages/User/Home.jsx';
 
 const AttendeeLayout = () => {
   return (
@@ -14,7 +14,7 @@ const AttendeeLayout = () => {
       <NavBar />
       <main className="flex-1 p-4 overflow-y-auto">
           <Routes>
-            {/* <Route path="/" element={<Dashboard />} /> */}
+            <Route path="/" element={<Home />} />
             <Route path="/events" element={<Events />} />
         <Route path="/events/:eventId" element={<EventDetails />} />
         <Route path="/events/:eventId/attendee" element={<InputattendeeData />} />
