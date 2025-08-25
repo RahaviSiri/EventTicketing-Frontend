@@ -7,11 +7,11 @@ export const AppContext = createContext();
 export const AppContextProvider = ({children}) => {
 
 
-    const [role,setRole] = useState("ATTENDEE");
+    // const [role,setRole] = useState("ATTENDEE");
     const [token, setToken] = useState(localStorage.getItem("EventToken") || null);
 
 
-    // const [role,setRole] = useState("ORGANIZER");
+    const [role,setRole] = useState("ORGANIZER");
     // const [token, setToken] = useState(localStorage.getItem("EventToken") || null);
 
 
