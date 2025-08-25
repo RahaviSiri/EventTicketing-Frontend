@@ -16,11 +16,11 @@ const navItems = [
         icon: <CalendarIcon className="h-6 w-6" />,
         label: "Orders",
     },
-    {
-        path: "/organizers/report",
-        icon: <DocumentTextIcon className="h-6 w-6" />,
-        label: "Report Generate",
-    },
+    // {
+    //     path: "/organizers/report",
+    //     icon: <DocumentTextIcon className="h-6 w-6" />,
+    //     label: "Report Generate",
+    // },
     {
         path: "/organizers/scanQR",
         icon: <QrCodeIcon className="h-6 w-6" />,

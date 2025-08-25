@@ -49,7 +49,7 @@ const Navbar = () => {
             </Link>
             
             <Link
-              to="/login"
+              to="/organizers/home"
               className="bg-[#8076a3] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition duration-200"
             >
               Create Event
