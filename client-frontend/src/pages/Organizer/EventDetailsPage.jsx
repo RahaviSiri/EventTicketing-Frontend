@@ -2,34 +2,6 @@ import React from 'react';
 import colors from '../../constants/colors';
 import { useLocation } from 'react-router-dom';
 
-const dummyEvent = {
-  id: 11,
-  organizerId: 456,
-  venue: {
-    id: 11,
-    name: "Sunset Conference Center",
-    address: "789 Sunset Blvd",
-    city: "Los Angeles",
-    state: "CA",
-    postalCode: "90028",
-    country: "USA",
-    capacity: 300,
-    description: "Modern conference center with multiple halls and state-of-the-art facilities."
-  },
-  name: "Tech Innovators Summit",
-  description: "An annual gathering of technology leaders and innovators.",
-  startDate: "2025-09-15",
-  startTime: "09:00:00",
-  endDate: "2025-09-17",
-  endTime: "17:00:00",
-  seatingChartId: 10,
-  status: "CREATED",
-  category: "Conference",
-  imageUrl: "https://res.cloudinary.com/dxtnyxmtk/image/upload/v1754722311/c6nftjoml05nndkes1hz.jpg",
-  createdAt: "2025-08-09T12:21:48.647647",
-  updatedAt: "2025-08-09T12:21:52.56936"
-};
-
 const EventDetailsPage = () => {
 
   const location = useLocation();

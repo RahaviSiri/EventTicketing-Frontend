@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { AppContext } from "../../context/AppContext";
 
 const AddEvent = () => {
   const navigate = useNavigate();
   const { id } = useParams(); // Get event ID from URL
   const isEditMode = Boolean(id); // Check if we are editing
+  const { eventServiceURL } = useContext(AppContext);
 
   const [form, setForm] = useState({
     organizerId: 456,
@@ -32,7 +34,7 @@ const AddEvent = () => {
   // Fetch existing event details if editing
   useEffect(() => {
     if (isEditMode) {
-      fetch(`http://localhost:8089/api/events/${id}`)
+      fetch(`${eventServiceURL}/${id}`)
         .then((res) => {
           if (!res.ok) throw new Error("Failed to fetch event details");
           return res.json();
@@ -69,7 +71,7 @@ const AddEvent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const Backend_URL = `http://localhost:8089/api/events${isEditMode ? `/${id}` : ""}`;
+    const Backend_URL = `${eventServiceURL}${isEditMode ? `/${id}` : ""}`;
 
     try {
       const formData = new FormData();
