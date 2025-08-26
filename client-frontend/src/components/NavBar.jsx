@@ -49,6 +49,12 @@ const Navbar = () => {
             </Link>
             
             <Link
+              to="/profile"
+              className="text-gray-800 hover:text-gray-600 px-3 py-2 rounded-md text-sm font-medium"
+            >
+              Profile
+            </Link>
+            <Link
               to="/login"
               className="bg-[#8076a3] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition duration-200"
             >
@@ -96,6 +102,13 @@ const Navbar = () => {
               className="text-gray-800 hover:text-gray-600 block px-3 py-2 rounded-md text-base font-medium"
             >
               Browse Events
+            </Link>
+            <Link
+              to="/profile"
+              onClick={toggleMenu}
+              className="text-gray-800 hover:text-gray-600 block px-3 py-2 rounded-md text-base font-medium"
+            >
+              Profile
             </Link>
             <Link
               to="/about"
