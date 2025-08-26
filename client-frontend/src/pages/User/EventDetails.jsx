@@ -37,9 +37,9 @@ const EventDetail = () => {
     }, 800);
   }, [id]);
 
-  // const handleBookNow = () => {
-  //   navigate(`/events/${id}/seats`);
-  // };
+  const handleBookNow = () => {
+    navigate(`/events/${id}/seats`);
+  };
 
   
 
@@ -174,12 +174,12 @@ const EventDetail = () => {
               </div>
             </div>
 
-            {/* <button
+             <button
               onClick={handleBookNow}
               className="w-full bg-blue-600 text-white hover:bg-blue-700 py-3 px-4 rounded-lg font-semibold transition-colors"
             >
               Select Seats & Book Now
-            </button> */}
+            </button> 
 
             
           </div>

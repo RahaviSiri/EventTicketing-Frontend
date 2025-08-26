@@ -9,6 +9,10 @@ export const AppContextProvider = ({children}) => {
 
     const [role,setRole] = useState("ATTENDEE");
     const [token, setToken] = useState(localStorage.getItem("EventToken") || null);
+    const [user, setUser] = useState({
+        name: "John Doe",
+        email: "john.doe@example.com"
+    });
 
 
     // const [role,setRole] = useState("ORGANIZER");
@@ -20,7 +24,8 @@ export const AppContextProvider = ({children}) => {
         setRole,
         setToken,
         token,
-
+        user,
+        setUser,
     }
 
     return ( 

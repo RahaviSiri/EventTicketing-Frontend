@@ -2,27 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Search, Filter, Star } from 'lucide-react';
 
-interface Event {
-  id: number;
-  title: string;
-  date: string;
-  location: string;
-  image: string;
-  price: number;
-  category: string;
-  rating?: number;
-  availableSeats?: number;
-}
-
-const Events: React.FC = () => {
-  const [events, setEvents] = useState<Event[]>([]);
+const Events = () => {
+  const [events, setEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Mock API call - replace with actual API
-    const mockEvents: Event[] = [
+    const mockEvents = [
       {
         id: 1,
         title: "Colombo Tech Summit 2026",
