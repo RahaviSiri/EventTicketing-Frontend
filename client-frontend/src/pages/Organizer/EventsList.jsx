@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import CardMedia from '@mui/material/CardMedia';
@@ -13,15 +13,17 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ViewEventHeader from '../../components/OrganizerComponents/ViewEventHeader';
 import { useNavigate } from 'react-router-dom';
+import { AppContext } from '../../context/AppContext';
 
 const EventsList = () => {
     const [events, setEvents] = useState([]);
     const [anchorEl, setAnchorEl] = useState(null);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const navigate = useNavigate();
+    const { eventServiceURL } = useContext(AppContext);
 
     useEffect(() => {
-        fetch('http://localhost:8089/api/events')
+        fetch(`${eventServiceURL}`)
             .then((res) => {
                 if (!res.ok) throw new Error('Failed to fetch events');
                 return res.json();
@@ -51,7 +53,7 @@ const EventsList = () => {
     };
 
     const handleDelete = () => {
-        fetch(`http://localhost:8089/api/events/${selectedEvent.id}`, {
+        fetch(`${eventServiceURL}/${selectedEvent.id}`, {
             method: 'DELETE',
         })
         .then(() => setEvents(events.filter(e => e.id !== selectedEvent.id)))

@@ -1,14 +1,24 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { AppContext } from '../context/AppContext';
 
 const Navbar = () => {
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const { token, setRole } = useContext(AppContext);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
+
+  const handleButtonClick = () => {
+    // if (token) {
+      setRole("ORGANIZER");
+    // } else {
+    //   navigate('/login');
+    // }
+  }
 
  
   return (
@@ -48,12 +58,12 @@ const Navbar = () => {
               Contact
             </Link>
             
-            <Link
-              to="/organizers/home"
+            <button
+              onClick={handleButtonClick}
               className="bg-[#8076a3] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition duration-200"
             >
               Create Event
-            </Link>
+            </button>
             <Link
               to="/login"
               className="text-gray-800 hover:text-gray-600 px-3 py-2 rounded-md text-sm font-medium"
@@ -111,12 +121,15 @@ const Navbar = () => {
             >
               Contact
             </Link>
-             <Link
-              to="/login"
+             <button
+              onClick={() => {
+                toggleMenu();
+                handleButtonClick();
+              }}
               className="bg-[#8076a3] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition duration-200"
             >
               Create Event
-            </Link>
+            </button>
             <Link
               to="/login"
               onClick={toggleMenu}
