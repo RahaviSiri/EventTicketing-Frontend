@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { DollarSign, Calendar, Users, Ticket, ChevronDown } from "lucide-react";
+import {
+  DollarSign,
+  Calendar,
+  Users,
+  Ticket,
+  ChevronDown,
+  UserCog,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -47,56 +55,67 @@ const userEventData = [
 
 export default function Dashboard() {
   const [dateFilter, setDateFilter] = useState("Last 7 days");
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="border-b border-border/50 bg-card">
-        <div className="container mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
+      <div className="border-b border-border bg-card">
+        <div className="max-w-[1400px] mx-auto p-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-semibold text-foreground">
+              <h1 className="text-2xl md:text-3xl font-semibold text-foreground">
                 Welcome back, Admin
               </h1>
-              <p className="text-muted-foreground mt-1">
+              <p className="mt-1 text-muted-foreground">
                 Here's what's happening with your events today.
               </p>
             </div>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2">
-                  {dateFilter}
-                  <ChevronDown className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="bg-card border-border"
-              >
-                <DropdownMenuItem onClick={() => setDateFilter("Last 7 days")}>
-                  Last 7 days
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setDateFilter("This Month")}>
-                  This Month
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setDateFilter("Last 3 Months")}
-                >
-                  Last 3 Months
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setDateFilter("This Year")}>
-                  This Year
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/users")}
+              className="flex items-center gap-2"
+            >
+              <UserCog className="w-4 h-4" />
+              <span>Manage Users</span>
+            </Button>
           </div>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                {dateFilter}
+                <ChevronDown className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              style={{
+                backgroundColor: "hsl(var(--card))",
+                border: "1px solid hsl(var(--border))",
+              }}
+            >
+              <DropdownMenuItem onClick={() => setDateFilter("Last 7 days")}>
+                Last 7 days
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setDateFilter("This Month")}>
+                This Month
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setDateFilter("Last 3 Months")}>
+                Last 3 Months
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setDateFilter("This Year")}>
+                This Year
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
-      <div className="container mx-auto px-6 py-8 space-y-8">
+      <div className="max-w-[1400px] mx-auto p-8 flex flex-col gap-8">
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             title="Total Revenue"
             value="$24,500"
@@ -124,9 +143,9 @@ export default function Dashboard() {
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 gap-8">
           {/* Revenue Chart */}
-          <Card className="shadow-sm border-border/50">
+          <Card style={{ borderColor: "hsl(var(--border))" }}>
             <CardHeader>
               <CardTitle className="text-foreground">
                 Revenue Over Time
@@ -135,45 +154,40 @@ export default function Dashboard() {
                 Monthly revenue trends for this year
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={revenueData}>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="hsl(var(--border))"
-                    />
-                    <XAxis
-                      dataKey="name"
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                    />
-                    <YAxis
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="revenue"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth={2}
-                      dot={{ fill: "hsl(var(--primary))" }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+            <CardContent className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={revenueData}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="hsl(var(--border))"
+                  />
+                  <XAxis
+                    dataKey="name"
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={12}
+                  />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2}
+                    dot={{ fill: "hsl(var(--primary))" }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
 
           {/* User Signups vs Events Chart */}
-          <Card className="shadow-sm border-border/50">
+          <Card style={{ borderColor: "hsl(var(--border))" }}>
             <CardHeader>
               <CardTitle className="text-foreground">
                 User Sign-ups vs. Events Created
@@ -182,43 +196,38 @@ export default function Dashboard() {
                 Comparing user growth with event creation
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={userEventData}>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="hsl(var(--border))"
-                    />
-                    <XAxis
-                      dataKey="name"
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                    />
-                    <YAxis
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                      }}
-                    />
-                    <Bar
-                      dataKey="signups"
-                      fill="hsl(var(--primary))"
-                      name="Sign-ups"
-                    />
-                    <Bar
-                      dataKey="events"
-                      fill="hsl(var(--accent))"
-                      name="Events"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+            <CardContent className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={userEventData}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="hsl(var(--border))"
+                  />
+                  <XAxis
+                    dataKey="name"
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={12}
+                  />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
+                    }}
+                  />
+                  <Bar
+                    dataKey="signups"
+                    fill="hsl(var(--primary))"
+                    name="Sign-ups"
+                  />
+                  <Bar
+                    dataKey="events"
+                    fill="hsl(var(--accent))"
+                    name="Events"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
         </div>

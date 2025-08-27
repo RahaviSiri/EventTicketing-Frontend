@@ -9,7 +9,10 @@ export default function StatCard({
   className,
 }) {
   return (
-    <Card className={cn("shadow-sm border-border/50", className)}>
+    <Card
+      className={cn("shadow-sm", className)}
+      style={{ borderColor: "hsl(var(--border))" }}
+    >
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
@@ -27,7 +30,10 @@ export default function StatCard({
               </p>
             )}
           </div>
-          <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+          <div
+            className="w-12 h-12 rounded-lg flex items-center justify-center"
+            style={{ backgroundColor: "hsl(var(--primary)/0.1)" }}
+          >
             <Icon className="w-6 h-6 text-primary" />
           </div>
         </div>
