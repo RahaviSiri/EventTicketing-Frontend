@@ -80,6 +80,15 @@ export default function Dashboard() {
               <UserCog className="w-4 h-4" />
               <span>Manage Users</span>
             </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/reports")}
+              className="flex items-center space-x-2"
+            >
+              <span>Platform Reports</span>
+            </Button>
           </div>
 
           <DropdownMenu>
