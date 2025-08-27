@@ -22,29 +22,16 @@ const SeatSelection = () => {
     const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
     const seatsPerRow = 12;
 
-    rows.forEach((row, rowIndex) => {
+    rows.forEach((row) => {
       for (let seatNum = 1; seatNum <= seatsPerRow; seatNum++) {
-        let seatType = 'standard';
-        let price = 299;
-
-        if (rowIndex < 2) {
-          seatType = 'vip';
-          price = 599;
-        } else if (rowIndex < 4) {
-          seatType = 'premium';
-          price = 449;
-        }
-
-        // Randomly mark some seats as booked
-        const isBooked = Math.random() < 0.2;
-
+        const isBooked = Math.random() < 0.2; // 20% booked randomly
         mockSeats.push({
           id: `${row}${seatNum}`,
           row,
           number: seatNum,
-          price,
+          price: 299,
           status: isBooked ? 'booked' : 'available',
-          type: seatType
+          type: 'standard'
         });
       }
     });
@@ -79,17 +66,11 @@ const SeatSelection = () => {
   const getSeatColor = (seat) => {
     switch (seat.status) {
       case 'available':
-        return seat.type === 'vip' 
-          ? 'fill-purple-200 hover:fill-purple-300 cursor-pointer' 
-          : seat.type === 'premium'
-          ? 'fill-blue-200 hover:fill-blue-300 cursor-pointer'
-          : 'fill-green-200 hover:fill-green-300 cursor-pointer';
+        return 'fill-green-200 hover:fill-green-300 cursor-pointer';
       case 'selected':
         return 'fill-yellow-400';
       case 'booked':
         return 'fill-red-400 cursor-not-allowed';
-      case 'reserved':
-        return 'fill-gray-400 cursor-not-allowed';
       default:
         return 'fill-gray-200';
     }
@@ -138,15 +119,10 @@ const SeatSelection = () => {
           {/* Seat Map */}
           <div className="lg:col-span-3">
             <div className="bg-white rounded-lg shadow-md p-6">
-              {/* Stage */}
-              <div className="bg-gray-800 text-white text-center py-4 rounded-lg mb-8">
-                <h3 className="text-lg font-semibold">STAGE</h3>
-              </div>
-
               {/* Seat Map SVG */}
               <div className="flex justify-center mb-8">
                 <svg width="600" height="400" viewBox="0 0 600 400" className="border rounded-lg">
-                  {seats.map((seat, index) => {
+                  {seats.map((seat) => {
                     const rowIndex = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].indexOf(seat.row);
                     const x = 50 + (seat.number - 1) * 45;
                     const y = 50 + rowIndex * 40;
@@ -193,15 +169,7 @@ const SeatSelection = () => {
               <div className="flex justify-center space-x-6 text-sm">
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 bg-green-200 rounded"></div>
-                  <span>Standard ($299)</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-blue-200 rounded"></div>
-                  <span>Premium ($449)</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-purple-200 rounded"></div>
-                  <span>VIP ($599)</span>
+                  <span>Available</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 bg-yellow-400 rounded"></div>
@@ -235,7 +203,7 @@ const SeatSelection = () => {
                     {selectedSeats.map(seat => (
                       <div key={seat.id} className="flex justify-between items-center py-2 border-b border-gray-100">
                         <span className="text-sm">
-                          Seat {seat.row}{seat.number} ({seat.type})
+                          Seat {seat.row}{seat.number}
                         </span>
                         <span className="font-medium">${seat.price}</span>
                       </div>
