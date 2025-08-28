@@ -6,20 +6,20 @@ import { AppContext } from '../context/AppContext';
 const Navbar = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  const { token, setRole } = useContext(AppContext);
+  const { token, changeUserRole } = useContext(AppContext);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
 
-  const handleButtonClick = () => {
-    // if (token) {
-      setRole("ORGANIZER");
-    // } else {
-    //   navigate('/login');
-    // }
+  const handleButtonClick = async () => {
+    if (token) {
+      await changeUserRole("ORGANIZER");
+      navigate('/organizers/home');
+    } else {
+      navigate('/login');
+    }
   }
-
  
   return (
     <nav className="bg-white shadow sticky top-0 z-50">
@@ -64,12 +64,14 @@ const Navbar = () => {
             >
               Create Event
             </button>
-            <Link
-              to="/login"
-              className="text-gray-800 hover:text-gray-600 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Login
-            </Link>
+            {!token && 
+              <Link
+                to="/login"
+                className="text-gray-800 hover:text-gray-600 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Login
+              </Link>
+            }
             
           </div>
 
@@ -130,13 +132,15 @@ const Navbar = () => {
             >
               Create Event
             </button>
-            <Link
-              to="/login"
-              onClick={toggleMenu}
-              className="text-gray-800 hover:text-gray-600 block px-3 py-2 rounded-md text-base font-medium"
-            >
-              Login
-            </Link>
+            {!token && 
+              <Link
+                to="/login"
+                onClick={toggleMenu}
+                className="text-gray-800 hover:text-gray-600 block px-3 py-2 rounded-md text-base font-medium"
+              >
+                Login
+              </Link>
+            }
             
           </div>
         </div>

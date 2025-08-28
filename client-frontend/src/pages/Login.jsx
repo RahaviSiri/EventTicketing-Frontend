@@ -3,7 +3,7 @@ import { AppContext } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-    const { setToken } = useContext(AppContext)
+    const { setToken, userServiceURL } = useContext(AppContext)
     const [state, setState] = useState("Login");
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -23,8 +23,8 @@ const Login = () => {
         };
 
         const url = state === "Login"
-                ? "http://localhost:8080/api/users/login"
-                : "http://localhost:8080/api/users/register";
+                ? `${userServiceURL}/login`
+                : `${userServiceURL}/register`;
 
         try {
             const response = await fetch(url, {
@@ -36,7 +36,7 @@ const Login = () => {
             });
 
             if (!response.ok) {
-                throw new Error("Network response was not ok");
+                throw new Error(response.body);
             }
 
             const data = await response.json();
@@ -46,7 +46,7 @@ const Login = () => {
             setEmail("");
             setPassword("");
             setName("");
-            navigate("/organizers");
+            navigate('/');
         } catch (error) {
             console.error("Error during login or registration:", error);
         }
