@@ -1,8 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import { NavLink } from "react-router-dom";
 import { HomeIcon, CalendarIcon, DocumentTextIcon, QrCodeIcon, PlusCircleIcon, Squares2X2Icon,
 ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
 import colors from "../constants/colors";
+import { AppContext } from "../context/AppContext";
+import { useNavigate } from "react-router-dom";
 
 const navItems = [
     { path: "/organizers/home", icon: <HomeIcon className="h-6 w-6" />, label: "Dashboard" },
@@ -37,7 +39,14 @@ const OrganizerNavBar = () => {
 
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef();
+    const { changeUserRole } = useContext(AppContext);
+    const navigate = useNavigate();
 
+    const handleChangeRole = async () => {
+        await changeUserRole("ATTENDEE");
+        navigate("/");
+    }
+    
     useEffect(() => {
         const handler = (e) => {
             if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -68,6 +77,15 @@ const OrganizerNavBar = () => {
                     className="hover:bg-gray-100 p-2 rounded-md lg:hidden"
                 >
                     <Squares2X2Icon className="h-6 w-6 text-gray-700" />
+                </button>
+
+                {/* Dropdown trigger */}
+                <button
+                    onClick={handleChangeRole}
+                    style={{ backgroundColor: colors.primary }}
+                    className="p-1 lg:p-2 text-sm lg:text-md rounded-md text-white"
+                >
+                    Become User
                 </button>
 
                 {/* Profile Initial */}
