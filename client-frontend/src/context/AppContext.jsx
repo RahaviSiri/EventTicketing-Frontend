@@ -6,6 +6,7 @@ export const AppContextProvider = ({ children }) => {
     const eventServiceURL = 'http://localhost:8080/api/events';
     const userServiceURL = "http://localhost:8080/api/users";
     const [role, setRole] = useState("");
+    const [userID, setUserID] = useState();
     const [token, setToken] = useState(localStorage.getItem("EventToken") || null);
 
     const getRole = async () => {
@@ -27,7 +28,10 @@ export const AppContextProvider = ({ children }) => {
 
     useEffect(() => {
         getRole();
-    }, [token]);
+        getUserID();
+        console.log("Role:", role);
+        console.log("UserID:", userID);
+    }, [token,role, userID]);
 
     const changeUserRole = async (roleUser) => {
         if (!token) return;
@@ -46,6 +50,23 @@ export const AppContextProvider = ({ children }) => {
         }
     };
 
+    const getUserID = async () => {
+        if (!token) return;
+        try {
+            const res = await fetch(`${userServiceURL}/getUserID`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token
+                },
+            });
+            const data = await res.json();
+            if (data.userID) setUserID(data.userID);
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
     const value = {
         role,
         setRole,
@@ -54,6 +75,7 @@ export const AppContextProvider = ({ children }) => {
         eventServiceURL,
         userServiceURL,
         changeUserRole,
+        userID,
     };
 
     return (

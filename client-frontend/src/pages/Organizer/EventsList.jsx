@@ -20,17 +20,34 @@ const EventsList = () => {
     const [anchorEl, setAnchorEl] = useState(null);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const navigate = useNavigate();
-    const { eventServiceURL } = useContext(AppContext);
+    const { eventServiceURL, userID, token } = useContext(AppContext);
 
     useEffect(() => {
-        fetch(`${eventServiceURL}`)
-            .then((res) => {
-                if (!res.ok) throw new Error('Failed to fetch events');
-                return res.json();
-            })
-            .then((data) => setEvents(data))
-            .catch((error) => console.error('Error fetching events:', error));
-    }, []);
+        const fetchEvents = async () => {
+            if (!userID) return; // wait until userID is available
+            const id = parseInt(userID, 10);
+            try {
+                const res = await fetch(`${eventServiceURL}/organizer/${id}`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        // Authorization: token, 
+                    },
+                });
+
+                if (!res.ok) throw new Error("Failed to fetch events");
+
+                const data = await res.json();
+                setEvents(data);
+                console.log("Fetched events:", data);
+            } catch (error) {
+            console.error("Error fetching events:", error);
+            }
+        };
+        fetchEvents();
+        console.log("UserID in EventsList:", userID);
+        console.log(events);
+    }, [token, userID]);
 
     const handleCardClick = (event) => {
         navigate(`/organizers/eventDetails`, { state: { event } });
@@ -67,7 +84,7 @@ const EventsList = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6 px-4">
                 {events.map((event) => (
                     <Card
-                        key={event.id}
+                        key={event.event.id}
                         sx={{ maxWidth: 350, backgroundColor: '#faf8f5', cursor: 'pointer' }}
                     >
                         <CardHeader
@@ -76,7 +93,7 @@ const EventsList = () => {
                                     <IconButton
                                         aria-label="settings"
                                         sx={{ padding: 0.5 }}
-                                        onClick={(e) => handleMenuOpen(e, event)}
+                                        onClick={(e) => handleMenuOpen(e, event.event)}
                                     >
                                         <MoreVertIcon fontSize="small" />
                                     </IconButton>
@@ -92,8 +109,8 @@ const EventsList = () => {
                                     </Menu>
                                 </>
                             }
-                            title={event.name}
-                            subheader={new Date(event.startDate).toLocaleDateString(undefined, {
+                            title={event.event.name}
+                            subheader={new Date(event.event.startDate).toLocaleDateString(undefined, {
                                 year: 'numeric',
                                 month: 'long',
                                 day: 'numeric',
@@ -109,14 +126,14 @@ const EventsList = () => {
                         <CardMedia
                             component="img"
                             height="140"
-                            image={event.imageUrl}
+                            image={event.event.imageUrl}
                             alt={event.name}
-                            onClick={() => handleCardClick(event)}
+                            onClick={() => handleCardClick(event.event)}
                             sx={{ cursor: 'pointer', objectFit: 'cover' }}
                         />
                         <CardContent sx={{ pt: 1, pb: 1 }}>
                             <Typography variant="body2" sx={{ color: 'text.secondary', pt: 1, mb: 0 }}>
-                                {event.description}
+                                {event.event.description}
                             </Typography>
                         </CardContent>
                         <CardActions disableSpacing sx={{ pt: 0, pb: 1, px: 1 }}>
