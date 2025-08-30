@@ -1,15 +1,16 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AppContext } from "../../context/AppContext";
+import colors from '../../constants/colors';
 
 const AddEvent = () => {
   const navigate = useNavigate();
   const { id } = useParams(); // Get event ID from URL
   const isEditMode = Boolean(id); // Check if we are editing
-  const { eventServiceURL } = useContext(AppContext);
+  const { eventServiceURL, userID } = useContext(AppContext);
 
   const [form, setForm] = useState({
-    organizerId: 456,
+    organizerId: userID,
     venue: {
       name: "",
       address: "",
@@ -88,8 +89,16 @@ const AddEvent = () => {
         throw new Error(`Request failed (${res.status}): ${errText || res.statusText}`);
       }
 
-      alert(`Event ${isEditMode ? "updated" : "created"} successfully!`);
-      navigate("/organizers/viewEvent");
+      if (res.ok) {
+        alert(`Event ${isEditMode ? "updated" : "created"} successfully!`);
+        const savedEvent = await res.json();
+        console.log("Saved event:", savedEvent);
+        
+        // Pass saved event to seating designer
+        navigate("/organizers/designLayout", {
+          state: { event: savedEvent },
+        });
+      }
     } catch (err) {
       console.error(err);
       alert(`Failed to ${isEditMode ? "update" : "create"} event: ${err.message}`);
@@ -128,19 +137,19 @@ const AddEvent = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="block">
                 <span className="block text-sm mb-1">Start Date</span>
-                <input type="date" name="startDate" value={form.startDate} onChange={handleChange} className="w-full rounded-md border p-2" required />
+                <input type="date" name="startDate" value={form.startDate} onChange={handleChange} className="w-full rounded-md border p-2"  />
               </label>
               <label className="block">
                 <span className="block text-sm mb-1">Start Time</span>
-                <input type="time" name="startTime" value={form.startTime} onChange={handleChange} className="w-full rounded-md border p-2" step="1" required />
+                <input type="time" name="startTime" value={form.startTime} onChange={handleChange} className="w-full rounded-md border p-2" step="1"  />
               </label>
               <label className="block">
                 <span className="block text-sm mb-1">End Date</span>
-                <input type="date" name="endDate" value={form.endDate} onChange={handleChange} className="w-full rounded-md border p-2" required />
+                <input type="date" name="endDate" value={form.endDate} onChange={handleChange} className="w-full rounded-md border p-2"  />
               </label>
               <label className="block">
                 <span className="block text-sm mb-1">End Time</span>
-                <input type="time" name="endTime" value={form.endTime} onChange={handleChange} className="w-full rounded-md border p-2" step="1" required />
+                <input type="time" name="endTime" value={form.endTime} onChange={handleChange} className="w-full rounded-md border p-2" step="1"  />
               </label>
             </div>
             <label className="block mt-3">
@@ -223,7 +232,8 @@ const AddEvent = () => {
 
           <button
             type="submit"
-            className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
+            style={{backgroundColor: `${colors.primary}`}}
+            className="px-4 py-2 rounded-md text-white"
           >
             {isEditMode ? "Update Event" : "Add Event"}
           </button>

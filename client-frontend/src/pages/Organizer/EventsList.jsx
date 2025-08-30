@@ -67,6 +67,7 @@ const EventsList = () => {
     const handleUpdate = () => {
         navigate(`/organizers/updateEvent/${selectedEvent.id}`);
         handleMenuClose();
+        // navigate('/organizers/viewEvent');
     };
 
     const handleDelete = () => {
@@ -76,6 +77,7 @@ const EventsList = () => {
         .then(() => setEvents(events.filter(e => e.id !== selectedEvent.id)))
         .catch((err) => console.error(err));
         handleMenuClose();
+        navigate('/organizers/viewEvent');
     };
 
     return (
