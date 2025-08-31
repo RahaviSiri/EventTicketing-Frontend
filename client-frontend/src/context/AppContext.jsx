@@ -17,7 +17,7 @@ export const AppContextProvider = ({ children }) => {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': token
+                    'Authorization': `Bearer ${token}`
                 }
             });
             const data = await res.json();
@@ -32,7 +32,7 @@ export const AppContextProvider = ({ children }) => {
         getUserID();
         console.log("Role:", role);
         console.log("UserID:", userID);
-    }, [token,role, userID]);
+    }, [token]);
 
     const changeUserRole = async (roleUser) => {
         if (!token) return;
@@ -41,7 +41,7 @@ export const AppContextProvider = ({ children }) => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': token
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({ role: roleUser })
             });
@@ -58,7 +58,7 @@ export const AppContextProvider = ({ children }) => {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': token
+                    'Authorization': `Bearer ${token}`
                 },
             });
             const data = await res.json();

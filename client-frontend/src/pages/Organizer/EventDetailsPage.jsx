@@ -7,7 +7,7 @@ const EventDetailsPage = () => {
   const location = useLocation();
   const event = location.state?.event;
   const [seatingChart, setSeatingChart] = React.useState({});
-  const { seatingServiceURL } = useContext(AppContext);
+  const { seatingServiceURL,token } = useContext(AppContext);
 
   if (!event) {
     return <p>No event data available.</p>;
@@ -16,7 +16,12 @@ const EventDetailsPage = () => {
   useEffect(() => {
     const fetchSeatingChart = async () => {
       try {
-        const res = await fetch(`${seatingServiceURL}/event/${event.id}`);
+        const res = await fetch(`${seatingServiceURL}/event/${event.id}`,{
+          headers: {
+            Authorization: `Bearer ${token}`
+            // 'Content-Type' is NOT needed for FormData
+          }
+        });
         const data = await res.json();
         const layout = JSON.parse(data.layoutJson);
         setSeatingChart(layout);
@@ -117,7 +122,7 @@ const EventDetailsPage = () => {
         </div>
 
         {/* Seats */}
-        <div style={{ position: 'relative', width: '600px', height: '400px', border: '1px solid #ccc' }}>
+        <div style={{ position: 'relative', width: '80vw', height: '80vh', border: '1px solid #ccc' }}>
           {seatingChart.seats?.map((seat) => (
             <div
               key={seat.seatNumber}

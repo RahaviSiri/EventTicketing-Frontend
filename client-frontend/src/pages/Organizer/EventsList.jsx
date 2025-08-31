@@ -31,7 +31,7 @@ const EventsList = () => {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
-                        // Authorization: token, 
+                        Authorization: `Bearer ${token}`
                     },
                 });
 
@@ -41,7 +41,7 @@ const EventsList = () => {
                 setEvents(data);
                 console.log("Fetched events:", data);
             } catch (error) {
-            console.error("Error fetching events:", error);
+                console.error("Error fetching events:", error);
             }
         };
         fetchEvents();
@@ -54,7 +54,7 @@ const EventsList = () => {
     };
 
     const handleMenuOpen = (e, evt) => {
-        e.stopPropagation(); 
+        e.stopPropagation();
         setAnchorEl(e.currentTarget);
         setSelectedEvent(evt);
     };
@@ -73,11 +73,16 @@ const EventsList = () => {
     const handleDelete = () => {
         fetch(`${eventServiceURL}/${selectedEvent.id}`, {
             method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
         })
-        .then(() => setEvents(events.filter(e => e.id !== selectedEvent.id)))
-        .catch((err) => console.error(err));
-        handleMenuClose();
-        navigate('/organizers/viewEvent');
+            .then(() => {
+                setEvents(events.filter(e => e.event.id !== selectedEvent.id));
+                handleMenuClose()
+            })
+            .catch((err) => console.error(err));
     };
 
     return (
@@ -111,7 +116,21 @@ const EventsList = () => {
                                     </Menu>
                                 </>
                             }
-                            title={event.event.name}
+                            title={
+                                <>
+                                    {event.event.name}
+                                    <span
+                                        style={{
+                                            marginLeft: "8px",
+                                            fontSize: "0.8rem",
+                                            color: new Date(event.event.endDate) < new Date() ? "red" : "green",
+                                            fontWeight: "bold",
+                                        }}
+                                    >
+                                        {new Date(event.event.endDate) < new Date() ? "Expired" : "Active"}
+                                    </span>
+                                </>
+                            }
                             subheader={new Date(event.event.startDate).toLocaleDateString(undefined, {
                                 year: 'numeric',
                                 month: 'long',
