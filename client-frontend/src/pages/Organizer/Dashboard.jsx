@@ -16,7 +16,7 @@ const Dashboard = () => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: token,
+          Authorization: `Bearer ${token}`
         },
       });
 
@@ -41,7 +41,8 @@ const Dashboard = () => {
   }, [userID, token]);
 
   // Earliest event for top card
-  const earliestEvent = events.length > 0 ? events[0] : null;
+  const upcomingEvents = events.filter((item) => new Date(item.event.endDate) >= new Date());
+  const earliestEvent = upcomingEvents.length > 0 ? upcomingEvents[0] : null; 
 
   return (
     <div className="p-6 space-y-6">
@@ -104,8 +105,8 @@ const Dashboard = () => {
       <div className="bg-white rounded-2xl shadow p-6">
         <h3 className="text-lg font-semibold mb-4">Upcoming Events</h3>
         <div className="space-y-4">
-          {events.length > 0 ? (
-            events.slice(0, 5).map((item) => {
+          {upcomingEvents.length > 0 ? (
+            upcomingEvents.slice(0, 5).map((item) => {
               const evt = item.event;
               const venue = item.venue;
 

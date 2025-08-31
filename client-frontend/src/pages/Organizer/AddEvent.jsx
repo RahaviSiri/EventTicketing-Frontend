@@ -7,7 +7,7 @@ const AddEvent = () => {
   const navigate = useNavigate();
   const { id } = useParams(); // Get event ID from URL
   const isEditMode = Boolean(id); // Check if we are editing
-  const { eventServiceURL, userID } = useContext(AppContext);
+  const { eventServiceURL, userID, token } = useContext(AppContext);
 
   const [form, setForm] = useState({
     organizerId: userID,
@@ -35,7 +35,12 @@ const AddEvent = () => {
   // Fetch existing event details if editing
   useEffect(() => {
     if (isEditMode) {
-      fetch(`${eventServiceURL}/${id}`)
+      fetch(`${eventServiceURL}/${id}`,{
+        headers: {
+          Authorization: `Bearer ${token}`
+          // 'Content-Type' is NOT needed for FormData
+        }
+      })
         .then((res) => {
           if (!res.ok) throw new Error("Failed to fetch event details");
           return res.json();
@@ -82,6 +87,10 @@ const AddEvent = () => {
       const res = await fetch(Backend_URL, {
         method: isEditMode ? "PUT" : "POST",
         body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`
+          // 'Content-Type' is NOT needed for FormData
+        }
       });
 
       if (!res.ok) {
@@ -124,37 +133,37 @@ const AddEvent = () => {
             <h2 className="text-lg font-medium mb-4">Event Details</h2>
             <label className="block mb-3">
               <span className="block text-sm mb-1">Organizer ID</span>
-              <input type="number" name="organizerId" value={form.organizerId} onChange={handleChange} className="w-full rounded-md border p-2" required />
+              <input type="number" name="organizerId" value={form.organizerId || ''} onChange={handleChange} className="w-full rounded-md border p-2" required />
             </label>
             <label className="block mb-3">
               <span className="block text-sm mb-1">Event Name</span>
-              <input type="text" name="name" value={form.name} onChange={handleChange} className="w-full rounded-md border p-2" required />
+              <input type="text" name="name" value={form.name || ''} onChange={handleChange} className="w-full rounded-md border p-2" required />
             </label>
             <label className="block mb-3">
               <span className="block text-sm mb-1">Description</span>
-              <textarea name="description" value={form.description} onChange={handleChange} className="w-full rounded-md border p-2" rows={4} required />
+              <textarea name="description" value={form.description || ''} onChange={handleChange} className="w-full rounded-md border p-2" rows={4} required />
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="block">
                 <span className="block text-sm mb-1">Start Date</span>
-                <input type="date" name="startDate" value={form.startDate} onChange={handleChange} className="w-full rounded-md border p-2"  />
+                <input type="date" name="startDate" value={form.startDate || ''} onChange={handleChange} className="w-full rounded-md border p-2"  />
               </label>
               <label className="block">
                 <span className="block text-sm mb-1">Start Time</span>
-                <input type="time" name="startTime" value={form.startTime} onChange={handleChange} className="w-full rounded-md border p-2" step="1"  />
+                <input type="time" name="startTime" value={form.startTime || ''} onChange={handleChange} className="w-full rounded-md border p-2" step="1"  />
               </label>
               <label className="block">
                 <span className="block text-sm mb-1">End Date</span>
-                <input type="date" name="endDate" value={form.endDate} onChange={handleChange} className="w-full rounded-md border p-2"  />
+                <input type="date" name="endDate" value={form.endDate || ''} onChange={handleChange} className="w-full rounded-md border p-2"  />
               </label>
               <label className="block">
                 <span className="block text-sm mb-1">End Time</span>
-                <input type="time" name="endTime" value={form.endTime} onChange={handleChange} className="w-full rounded-md border p-2" step="1"  />
+                <input type="time" name="endTime" value={form.endTime || ''} onChange={handleChange} className="w-full rounded-md border p-2" step="1"  />
               </label>
             </div>
             <label className="block mt-3">
               <span className="block text-sm mb-1">Category</span>
-              <select name="category" value={form.category} onChange={handleChange} className="w-full rounded-md border p-2" required>
+              <select name="category" value={form.category || ''} onChange={handleChange} className="w-full rounded-md border p-2" required>
                 <option value="">Select</option>
                 <option>Conference</option>
                 <option>Workshop</option>
@@ -182,20 +191,20 @@ const AddEvent = () => {
             <h2 className="text-lg font-medium mb-4">Venue Details</h2>
             <label className="block mb-3">
               <span className="block text-sm mb-1">Venue Name</span>
-              <input type="text" name="venue.name" value={form.venue.name} onChange={handleChange} className="w-full rounded-md border p-2" required />
+              <input type="text" name="venue.name" value={form.venue.name || ''} onChange={handleChange} className="w-full rounded-md border p-2" required />
             </label>
             <label className="block mb-3">
               <span className="block text-sm mb-1">Address</span>
-              <input type="text" name="venue.address" value={form.venue.address} onChange={handleChange} className="w-full rounded-md border p-2" required />
+              <input type="text" name="venue.address" value={form.venue.address || ''} onChange={handleChange} className="w-full rounded-md border p-2" required />
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <input type="text" name="venue.city" value={form.venue.city} onChange={handleChange} placeholder="City" className="w-full rounded-md border p-2" required />
-              <input type="text" name="venue.state" value={form.venue.state} onChange={handleChange} placeholder="State" className="w-full rounded-md border p-2" />
-              <input type="text" name="venue.postalCode" value={form.venue.postalCode} onChange={handleChange} placeholder="Postal Code" className="w-full rounded-md border p-2" />
-              <input type="text" name="venue.country" value={form.venue.country} onChange={handleChange} placeholder="Country" className="w-full rounded-md border p-2" />
-              <input type="number" name="venue.capacity" value={form.venue.capacity} onChange={handleChange} placeholder="Capacity" className="w-full rounded-md border p-2" min={0} />
+              <input type="text" name="venue.city" value={form.venue.city || ''} onChange={handleChange} placeholder="City" className="w-full rounded-md border p-2" required />
+              <input type="text" name="venue.state" value={form.venue.state || ''} onChange={handleChange} placeholder="State" className="w-full rounded-md border p-2" />
+              <input type="text" name="venue.postalCode" value={form.venue.postalCode || ''} onChange={handleChange} placeholder="Postal Code" className="w-full rounded-md border p-2" />
+              <input type="text" name="venue.country" value={form.venue.country || ''} onChange={handleChange} placeholder="Country" className="w-full rounded-md border p-2" />
+              <input type="number" name="venue.capacity" value={form.venue.capacity || ''} onChange={handleChange} placeholder="Capacity" className="w-full rounded-md border p-2" min={0} />
             </div>
-            <textarea name="venue.description" value={form.venue.description} onChange={handleChange} placeholder="Venue Description" className="w-full rounded-md border p-2 mt-3" rows={3} />
+            <textarea name="venue.description" value={form.venue.description || ''} onChange={handleChange} placeholder="Venue Description" className="w-full rounded-md border p-2 mt-3" rows={3} />
           </div>
         </section>
 
