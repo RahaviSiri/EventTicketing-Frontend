@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Search, Filter, Star } from 'lucide-react';
+import { AppContext } from '../../context/AppContext';
 
 interface Event {
   id: number;
-  title: string;
-  date: string;
-  location: string;
-  image: string;
-  price: number;
-  category: string;
+  title?: string;
+  date?: string;
+  location?: string;
+  image?: string;
+  price?: number;
+  category?: string;
   rating?: number;
   availableSeats?: number;
 }
@@ -19,74 +20,65 @@ const Events: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const { token } = useContext(AppContext);
 
   useEffect(() => {
-    // Mock API call - replace with actual API
-    const mockEvents: Event[] = [
-      {
-        id: 1,
-        title: "Colombo Tech Summit 2026",
-        date: "2026-03-15",
-        location: "Colombo, Sri Lanka",
-        image:
-          "https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg?auto=compress&cs=tinysrgb&w=800",
-        price: 1500,
-        category: "Technology",
-        rating: 4.5,
-        availableSeats: 50,
-      },
-      {
-        id: 2,
-        title: "Colombo Music Festival",
-        date: "2026-06-20",
-        location: "Colombo, Sri Lanka",
-        image:
-          "https://images.pexels.com/photos/1190298/pexels-photo-1190298.jpeg?auto=compress&cs=tinysrgb&w=800",
-        price: 1200,
-        category: "Music",
-        rating: 4.7,
-        availableSeats: 100,
-      },
-      {
-        id: 3,
-        title: "Jaffna Music Festival",
-        date: "2026-07-05",
-        location: "Jaffna, Sri Lanka",
-        image:
-          "https://images.pexels.com/photos/164821/pexels-photo-164821.jpeg?auto=compress&cs=tinysrgb&w=800",
-        price: 1000,
-        category: "Music",
-        rating: 4.6,
-        availableSeats: 80,
-      },
-      {
-        id: 4,
-        title: "Galle Literary Festival",
-        date: "2026-01-20",
-        location: "Galle, Sri Lanka",
-        image:
-          "https://images.pexels.com/photos/1269968/pexels-photo-1269968.jpeg?auto=compress&cs=tinysrgb&w=800",
-        price: 800,
-        category: "Literature",
-        rating: 4.8,
-        availableSeats: 40,
-      },
-    ];
+    const fetchEvents = async () => {
+      if (!token) {
+        setError("User not authenticated.");
+        setLoading(false);
+        return;
+      }
 
-    setTimeout(() => {
-      setEvents(mockEvents);
-      setLoading(false);
-    }, 1000);
-  }, []);
+      try {
+        setLoading(true);
+        const response = await fetch("http://localhost:8080/api/events", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch events: ${response.status}`);
+        }
+        const data = await response.json();
+
+        // Map backend fields to frontend Event interface
+        const mappedData: Event[] = data.map((ev: any) => ({
+          id: ev.id,
+          title: ev.name,
+          date: ev.startDate,
+          location: ev.venue?.name || 'TBD',
+          category: ev.category,
+          image: ev.imageUrl,
+          price: ev.price,
+          rating: ev.rating,
+          availableSeats: ev.availableSeats,
+        }));
+
+        setEvents(mappedData);
+      } catch (err: any) {
+        console.error("Error fetching events:", err);
+        setError(err.message || "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [token]);
 
   const filteredEvents = events.filter(event => {
-    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         event.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || event.category === selectedCategory;
+    const title = event.title || '';
+    const location = event.location || '';
+    const matchesSearch =
+      title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      selectedCategory === 'all' || event.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const categories = ['all', 'Technology', 'Music', 'Art', 'Business', 'Food'];
+  const categories = ['all', 'Conference', 'Workshop', 'Seminar', 'Meetup', 'Expo'];
 
   if (loading) {
     return (
@@ -96,13 +88,19 @@ const Events: React.FC = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-600">
+        <p>{error}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">All Events</h1>
-          
-          {/* Search and Filter */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex-1 relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -116,7 +114,6 @@ const Events: React.FC = () => {
                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-            
             <div className="flex items-center space-x-2">
               <Filter className="h-5 w-5 text-gray-400" />
               <select
@@ -134,7 +131,6 @@ const Events: React.FC = () => {
           </div>
         </div>
 
-        {/* Events Grid */}
         {filteredEvents.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">No events found matching your criteria.</p>
@@ -144,14 +140,14 @@ const Events: React.FC = () => {
             {filteredEvents.map((event) => (
               <div key={event.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                 <img
-                  src={event.image}
-                  alt={event.title}
+                  src={event.image || '/placeholder.png'}
+                  alt={event.title || 'Event'}
                   className="w-full h-48 object-cover"
                 />
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-2">
                     <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
-                      {event.category}
+                      {event.category || 'Uncategorized'}
                     </span>
                     {event.rating && (
                       <div className="flex items-center">
@@ -160,25 +156,21 @@ const Events: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  <h3 className="text-xl font-semibold mb-2 text-gray-900">
-                    {event.title}
-                  </h3>
+                  <h3 className="text-xl font-semibold mb-2 text-gray-900">{event.title || 'Untitled Event'}</h3>
                   <div className="flex items-center text-gray-600 text-sm mb-2">
                     <Calendar className="h-4 w-4 mr-1" />
-                    {new Date(event.date).toLocaleDateString()}
+                    {event.date ? new Date(event.date).toLocaleDateString() : 'Date TBD'}
                   </div>
                   <div className="flex items-center text-gray-600 text-sm mb-4">
                     <MapPin className="h-4 w-4 mr-1" />
-                    {event.location}
+                    {event.location || 'Location TBD'}
                   </div>
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-2xl font-bold text-green-600">
-                      Rs. {event.price.toLocaleString("en-LK")}
+                      Rs. {event.price?.toLocaleString("en-LK") || '0'}
                     </span>
                     {event.availableSeats !== undefined && (
-                      <span className="text-sm text-gray-500">
-                        {event.availableSeats} seats left
-                      </span>
+                      <span className="text-sm text-gray-500">{event.availableSeats} seats left</span>
                     )}
                   </div>
                   <Link
