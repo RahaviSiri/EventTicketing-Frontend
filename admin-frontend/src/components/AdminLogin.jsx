@@ -7,6 +7,8 @@ import { Eye, EyeOff, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AppContext } from "../context/AppContext";
+import { useContext } from "react";
 import {
   Card,
   CardContent,
@@ -28,6 +30,7 @@ const loginSchema = z.object({
 });
 
 export default function AdminLogin() {
+  const { setToken, userServiceURL } = useContext(AppContext);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -42,10 +45,29 @@ export default function AdminLogin() {
 
   const onSubmit = async (data) => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    console.log("Login attempt:", data);
-    setIsLoading(false);
-    navigate("/dashboard");
+    const loginData = { email: data.email, password: data.password };
+    try {
+      const response = await fetch(`${userServiceURL}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(loginData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to login");
+      }
+
+      const data = await response.json();
+      setToken(data.token);
+      localStorage.setItem("AdminToken", data.token);
+      navigate("/dashboard");
+      setIsLoading(false);
+    } catch (error) {
+      console.error(error);
+       setIsLoading(false);
+    }
   };
 
   return (
