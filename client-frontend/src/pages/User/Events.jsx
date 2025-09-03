@@ -3,24 +3,12 @@ import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Search, Filter, Star } from 'lucide-react';
 import { AppContext } from '../../context/AppContext';
 
-interface Event {
-  id: number;
-  title?: string;
-  date?: string;
-  location?: string;
-  image?: string;
-  price?: number;
-  category?: string;
-  rating?: number;
-  availableSeats?: number;
-}
-
-const Events: React.FC = () => {
-  const [events, setEvents] = useState<Event[]>([]);
+const Events = () => {
+  const [events, setEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
   const { token } = useContext(AppContext);
 
@@ -42,8 +30,7 @@ const Events: React.FC = () => {
         }
         const data = await response.json();
 
-        // Map backend fields to frontend Event interface
-        const mappedData: Event[] = data.map((ev: any) => ({
+        const mappedData = data.map((ev) => ({
           id: ev.id,
           title: ev.name,
           date: ev.startDate,
@@ -56,7 +43,7 @@ const Events: React.FC = () => {
         }));
 
         setEvents(mappedData);
-      } catch (err: any) {
+      } catch (err) {
         console.error("Error fetching events:", err);
         setError(err.message || "Unknown error");
       } finally {
@@ -166,9 +153,7 @@ const Events: React.FC = () => {
                     {event.location || 'Location TBD'}
                   </div>
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-2xl font-bold text-green-600">
-                      Rs. {event.price?.toLocaleString("en-LK") || '0'}
-                    </span>
+                    
                     {event.availableSeats !== undefined && (
                       <span className="text-sm text-gray-500">{event.availableSeats} seats left</span>
                     )}
