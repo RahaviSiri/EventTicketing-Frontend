@@ -13,6 +13,8 @@ import OAuthSuccess from '../pages/Organizer/OAuthSuccess.jsx';
 import EventsList from '../pages/Organizer/EventsList.jsx';
 import EventDetailsPage from '../pages/Organizer/EventDetailsPage.jsx';
 import SeatDesignLayout from '../pages/Organizer/SeatDesignLayout.jsx';
+import DiscountCreation from '../pages/Organizer/DiscountCreation.jsx';
+import DiscountList from '../pages/Organizer/DiscountList.jsx';
 
 const OrganizerLayout = () => {
 
@@ -36,6 +38,8 @@ const OrganizerLayout = () => {
             <Route path="/organizers/updateEvent/:id" element={<AddEvent />} />
             <Route path="/organizers/designLayout" element={< SeatDesignLayout/>} />
             <Route path="/organizers/eventDetails" element={<EventDetailsPage />} />
+            <Route path="/organizers/createDiscount" element={<DiscountCreation />} />
+            <Route path="/organizers/discountLists" element={<DiscountList />} />
           </Routes>
         </main>
       </div>
