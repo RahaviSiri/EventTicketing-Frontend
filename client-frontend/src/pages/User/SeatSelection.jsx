@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { Ticket, Crown, Users } from "lucide-react";
 
 const SeatSelection = () => {
-  const { token } = useContext(AppContext);
+  const { token, seatingServiceURL } = useContext(AppContext);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -93,7 +93,7 @@ const SeatSelection = () => {
 
       try {
         const res = await fetch(
-          `http://localhost:8080/api/seating-charts/event/${eventId}`,
+          `${seatingServiceURL}/event/${eventId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

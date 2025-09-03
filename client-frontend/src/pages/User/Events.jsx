@@ -10,7 +10,7 @@ const Events = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const { token } = useContext(AppContext);
+  const { token,eventServiceURL } = useContext(AppContext);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -22,7 +22,7 @@ const Events = () => {
 
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:8080/api/events", {
+        const response = await fetch(`${eventServiceURL}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) {

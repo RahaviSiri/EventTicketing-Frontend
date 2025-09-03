@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Calendar, MapPin, Users, Clock, Star } from "lucide-react";
+import { AppContext } from "../../context/AppContext";
 
 const EventDetail = () => {
   const { eventId } = useParams();
@@ -12,14 +13,14 @@ const [normalPrice, setNormalPrice] = useState(0);
   const [loadingEvent, setLoadingEvent] = useState(true);
   const [loadingSeats, setLoadingSeats] = useState(true);
   const [error, setError] = useState(null);
+  const { eventServiceURL, token, seatingServiceURL } = useContext(AppContext);
 
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const token = localStorage.getItem("EventToken");
         if (!token) throw new Error("No authentication token found.");
 
-        const response = await fetch(`http://localhost:8080/api/events/${eventId}`, {
+        const response = await fetch(`${eventServiceURL}/${eventId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -43,7 +44,7 @@ const [normalPrice, setNormalPrice] = useState(0);
     try {
       const token = localStorage.getItem("EventToken");
       const response = await fetch(
-        `http://localhost:8080/api/seating-charts/${event.seatingChartId}`,
+        `${seatingServiceURL}/${event.seatingChartId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 

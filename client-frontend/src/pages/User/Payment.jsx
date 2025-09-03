@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { motion } from "framer-motion";
 import { CreditCard, CheckCircle } from "lucide-react";
+import { AppContext } from "../../context/AppContext";
 
 const stripePromise = loadStripe(
   "pk_test_51RlZTHHtjMJALymh2E5t3Gnn5C2ViS2jSIL1Nuop16zrmddAfaM41kWxv93ItFg2JSSc2TCG8u8jRLsb3osHwwuj00g9AnZ04g"
@@ -16,6 +17,7 @@ const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { paymentServiceURL } = useContext(AppContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,7 +25,7 @@ const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
     setError(null);
 
     try {
-      const res = await fetch("http://localhost:8080/api/payments/create-payment-intent", {
+      const res = await fetch(`${paymentServiceURL}/create-payment-intent`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
