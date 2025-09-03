@@ -10,27 +10,29 @@ import Home from '../pages/User/Home.jsx';
 import Login from '../pages/Login.jsx';
 import PaymentSuccess from '../pages/User/PaymentSucces.jsx';
 import Contact from '../pages/User/Contact.jsx';
+import About from '../pages/User/About.jsx';
 
 const AttendeeLayout = () => {
   return (
     <div className="flex flex-col h-screen">
       <NavBar />
       <main className="flex-1 p-4 overflow-y-auto">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/events" element={<Events />} />
-              <Route path="/contact" element={<Contact />} />
-        <Route path="/events/:eventId" element={<EventDetails />} />
-        <Route path="/events/:eventId/attendee" element={<InputattendeeData />} />
-        <Route path="/events/:eventId/seats" element={<SeatSelection />} />
-        <Route path="/events/:eventId/payment" element={<Payment />} />
-         <Route path="/events/:eventId/success" element={<PaymentSuccess />} />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/about" element = {<About/>}/>
+          <Route path="/events/:eventId" element={<EventDetails />} />
+          <Route path="/events/:eventId/attendee" element={<InputattendeeData />} />
+          <Route path="/events/:eventId/seats" element={<SeatSelection />} />
+          <Route path="/events/:eventId/payment" element={<Payment />} />
+          <Route path="/events/:eventId/success" element={<PaymentSuccess />} />
 
-                    <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<Login />} />
 
-        {/* <Route path="/events/:eventId/confirmation" element={<ConfirmationPage />} /> */}
-          </Routes>
-        </main>
+          {/* <Route path="/events/:eventId/confirmation" element={<ConfirmationPage />} /> */}
+        </Routes>
+      </main>
     </div>
   );
 };
