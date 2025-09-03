@@ -14,15 +14,15 @@ const navItems = [
         label: "View Event",
     },
     {
+        path: "/organizers/discountLists",
+        icon: <DocumentTextIcon className="h-6 w-6" />,
+        label: "Discounts List",
+    },
+    {
         path: "/organizers/orderDetails",
         icon: <CalendarIcon className="h-6 w-6" />,
         label: "Orders",
     },
-    // {
-    //     path: "/organizers/report",
-    //     icon: <DocumentTextIcon className="h-6 w-6" />,
-    //     label: "Report Generate",
-    // },
     {
         path: "/organizers/scanQR",
         icon: <QrCodeIcon className="h-6 w-6" />,

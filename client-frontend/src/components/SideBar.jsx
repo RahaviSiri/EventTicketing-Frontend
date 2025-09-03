@@ -5,8 +5,8 @@ import { HomeIcon, CalendarIcon, DocumentTextIcon, QrCodeIcon, PlusCircleIcon } 
 const navItems = [
   { path: '/organizers/home', icon: <HomeIcon className="h-6 w-6" />, label: 'Dashboard' },
   { path: '/organizers/viewEvent', icon: <PlusCircleIcon className="h-6 w-6" />, label: 'View Events' },
+  { path: '/organizers/discountLists', icon: <DocumentTextIcon className="h-6 w-6" />, label: 'View Discounts' },
   { path: '/organizers/orderDetails', icon: <CalendarIcon className="h-6 w-6" />, label: 'Orders' },
-  // { path: '/organizers/report', icon: <DocumentTextIcon className="h-6 w-6" />, label: 'Report Generate' },
   { path: '/organizers/scanQR', icon: <QrCodeIcon className="h-6 w-6" />, label: 'Scan QR' },
 ];
 
