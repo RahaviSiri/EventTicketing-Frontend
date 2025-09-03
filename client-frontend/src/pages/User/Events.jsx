@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Search, Filter, Star } from 'lucide-react';
 import { AppContext } from '../../context/AppContext';
+import colors from '../../constants/colors';
 
 const Events = () => {
   const [events, setEvents] = useState([]);
@@ -70,7 +71,10 @@ const Events = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div
+          className="animate-spin rounded-full h-32 w-32 border-4"
+          style={{ borderColor: 'rgba(0,0,0,0.08)', borderBottomColor: colors.primary }}
+        ></div>
       </div>
     );
   }
@@ -87,7 +91,9 @@ const Events = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">All Events</h1>
+          <h1 className="text-3xl font-bold mb-4" style={{ color: colors.primary }}>
+            All Events
+          </h1>
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex-1 relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -125,7 +131,11 @@ const Events = () => {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredEvents.map((event) => (
-              <div key={event.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+              <div
+                key={event.id}
+                className="rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                style={{ backgroundColor: colors.secondary }}
+              >
                 <img
                   src={event.image || '/placeholder.png'}
                   alt={event.title || 'Event'}
@@ -133,7 +143,10 @@ const Events = () => {
                 />
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+                    <span
+                      className="text-white text-xs font-semibold px-2.5 py-0.5 rounded"
+                      style={{ backgroundColor: colors.accent }}
+                    >
                       {event.category || 'Uncategorized'}
                     </span>
                     {event.rating && (
@@ -153,14 +166,14 @@ const Events = () => {
                     {event.location || 'Location TBD'}
                   </div>
                   <div className="flex items-center justify-between mb-4">
-                    
                     {event.availableSeats !== undefined && (
                       <span className="text-sm text-gray-500">{event.availableSeats} seats left</span>
                     )}
                   </div>
                   <Link
                     to={`/events/${event.id}`}
-                    className="w-full bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md transition-colors text-center block"
+                    className="w-full text-white px-4 py-2 rounded-md transition-colors text-center block"
+                    style={{ backgroundColor: colors.primary }}
                   >
                     View Details
                   </Link>
