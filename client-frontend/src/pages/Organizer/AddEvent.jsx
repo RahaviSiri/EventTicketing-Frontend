@@ -170,6 +170,8 @@ const AddEvent = () => {
                 <option>Seminar</option>
                 <option>Meetup</option>
                 <option>Expo</option>
+                <option>Festivals</option>
+                <option>Concerts</option>
               </select>
             </label>
             {/* Image upload */}

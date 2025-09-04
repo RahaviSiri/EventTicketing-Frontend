@@ -3,9 +3,11 @@ import Konva from "konva";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AppContext } from "../../context/AppContext";
 import colors from "../../constants/colors";
+import { motion } from "framer-motion";
+import { Ticket, Crown, Users } from "lucide-react";
 
 const SeatSelection = () => {
-  const { token } = useContext(AppContext);
+  const { token, seatingServiceURL } = useContext(AppContext);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -41,7 +43,7 @@ const SeatSelection = () => {
 
   // --- Render single seat ---
   const renderSeat = (seatInfo) => {
-    const isSelected = selectedSeats.includes(seatInfo.seatNumber);
+    const isSelected = selectedSeats.some((s) => s.seatNumber === seatInfo.seatNumber);
 
     const fillColor =
       seatInfo.status === "booked"
@@ -60,17 +62,21 @@ const SeatSelection = () => {
       name: `seat-${seatInfo.seatNumber}`,
     });
 
-    // Click to select/unselect available seats
     seat.on("click", () => {
       if (seatInfo.status === "booked") return;
 
       setSelectedSeats((prev) => {
-        const updated = prev.includes(seatInfo.seatNumber)
-          ? prev.filter((s) => s !== seatInfo.seatNumber)
-          : [...prev, seatInfo.seatNumber];
+        const alreadySelected = prev.some((s) => s.seatNumber === seatInfo.seatNumber);
+        let updated;
 
-        seat.stroke(updated.includes(seatInfo.seatNumber) ? "red" : null);
-        seat.strokeWidth(updated.includes(seatInfo.seatNumber) ? 3 : 0);
+        if (alreadySelected) {
+          updated = prev.filter((s) => s.seatNumber !== seatInfo.seatNumber);
+        } else {
+          updated = [...prev, seatInfo]; // store full object
+        }
+
+        seat.stroke(updated.some((s) => s.seatNumber === seatInfo.seatNumber) ? "red" : null);
+        seat.strokeWidth(updated.some((s) => s.seatNumber === seatInfo.seatNumber) ? 3 : 0);
         layerRef.current.draw();
 
         return updated;
@@ -87,7 +93,7 @@ const SeatSelection = () => {
 
       try {
         const res = await fetch(
-          `http://localhost:8080/api/seating-charts/event/${eventId}`,
+          `${seatingServiceURL}/event/${eventId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -99,7 +105,6 @@ const SeatSelection = () => {
         const seats = data.layoutJson ? JSON.parse(data.layoutJson).seats : [];
         seatsDataRef.current = seats;
 
-        // Set VIP/Normal prices from JSON
         const vipSeats = seats.filter((s) => s.seatType === "VIP");
         const normalSeats = seats.filter(
           (s) => s.seatType !== "VIP" && s.status !== "booked"
@@ -117,81 +122,99 @@ const SeatSelection = () => {
     fetchLayout();
   }, [eventId, token]);
 
-  // --- Calculate total price ---
-  const totalPrice = selectedSeats.reduce((total, seatNum) => {
-    const seat = seatsDataRef.current.find((s) => s.seatNumber === seatNum);
-    return seat ? total + seat.price : total;
-  }, 0);
+  const totalPrice = selectedSeats.reduce((total, seat) => total + seat.price, 0);
 
-  // --- Handle booking ---
   const handleBooking = () => {
     if (selectedSeats.length === 0) {
       alert("Please select at least one seat");
       return;
     }
-    navigate(`/events/${eventId}/payment`, { state: { event, selectedSeats, totalPrice } });
+
+    // Pass full seat objects
+    navigate(`/events/${eventId}/payment`, {
+      state: { event, selectedSeats, totalPrice },
+    });
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 grid lg:grid-cols-4 gap-6">
+    <div className="max-w-7xl mx-auto p-6 grid lg:grid-cols-4 gap-8">
       {/* Seat Map */}
-      <div className="lg:col-span-3">
-        <h1 className="text-2xl font-bold mb-4">{event?.name} - Select Seats</h1>
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="lg:col-span-3 bg-white rounded-2xl shadow-lg p-6"
+      >
+        <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
+          <Ticket className="text-blue-600" /> {event?.name} - Select Seats
+        </h1>
+
         <div
           ref={containerRef}
-          className="border rounded shadow-md bg-white"
+          className="border rounded-xl shadow-inner bg-gray-50"
           style={{ width: "100%", minHeight: "500px" }}
         />
 
-        {/* Legend / Seat Prices */}
-        <div className="mt-6 flex justify-start space-x-6">
-          <div className="flex items-center space-x-2">
+        {/* Legend */}
+        <div className="mt-6 flex flex-wrap gap-6">
+          <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-full bg-yellow-400 border border-black"></div>
-            <span>VIP Seat: Rs.{vipPrice}</span>
+            <span className="text-gray-700 flex items-center gap-1">
+              <Crown size={16} className="text-yellow-500" /> VIP: Rs.{vipPrice}
+            </span>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-full bg-blue-600"></div>
-            <span>Normal Seat: Rs.{normalPrice}</span>
+            <span className="text-gray-700">Normal: Rs.{normalPrice}</span>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-full bg-red-600"></div>
-            <span>Booked Seat</span>
+            <span className="text-gray-700">Booked</span>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Sidebar: Selected Seats */}
-      <div className="lg:col-span-1 bg-white rounded-lg shadow-md p-6 sticky top-8 space-y-4">
-        <h2 className="text-xl font-bold mb-2">Your Selection</h2>
+      {/* Sidebar */}
+      <motion.div
+        initial={{ opacity: 0, x: 40 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6 }}
+        className="lg:col-span-1 bg-white rounded-2xl shadow-lg p-6 sticky top-8 h-fit"
+      >
+        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+          <Users className="text-gray-700" /> Your Selection
+        </h2>
 
         {selectedSeats.length === 0 ? (
-          <p className="text-gray-600">No seats selected</p>
+          <p className="text-gray-500">No seats selected yet</p>
         ) : (
-          <div className="space-y-2">
-            {selectedSeats.map((seatNum) => {
-              const seat = seatsDataRef.current.find((s) => s.seatNumber === seatNum);
-              return (
-                <div key={seatNum} className="flex justify-between text-gray-800">
-                  <span>{seat.seatNumber} ({seat.seatType})</span>
-                  <span>Rs.{seat.price}</span>
-                </div>
-              );
-            })}
+          <div className="space-y-3">
+            {selectedSeats.map((seat) => (
+              <div
+                key={seat.seatNumber}
+                className="flex justify-between items-center bg-gray-100 px-3 py-2 rounded-lg"
+              >
+                <span className="text-gray-800 font-medium">
+                  {seat.seatNumber} ({seat.seatType})
+                </span>
+                <span className="text-gray-900 font-semibold">Rs.{seat.price}</span>
+              </div>
+            ))}
           </div>
         )}
 
-        <div className="border-t pt-2 mt-2 flex justify-between font-semibold">
-          <span>Total Price</span>
+        <div className="border-t pt-4 mt-4 flex justify-between font-semibold text-lg text-gray-800">
+          <span>Total</span>
           <span>Rs.{totalPrice}</span>
         </div>
 
         <button
           onClick={handleBooking}
-          className="w-full bg-blue-600 text-white px-5 py-2 rounded shadow hover:bg-blue-700 mt-4"
+          className="w-full bg-blue-600 text-white px-5 py-3 rounded-xl shadow hover:bg-blue-700 transition-all duration-200 mt-6"
         >
           Confirm Booking ({selectedSeats.length})
         </button>
-      </div>
+      </motion.div>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon ,ArrowRightOnRectangleIcon} from '@heroicons/react/24/outline';
 import { AppContext } from '../context/AppContext';
 
 const Navbar = () => {
@@ -11,6 +11,11 @@ const Navbar = () => {
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem("EventToken");
+    window.location.href = "/login"; 
+};
 
   const handleButtonClick = async () => {
     if (token) {
@@ -72,6 +77,10 @@ const Navbar = () => {
                 Login
               </Link>
             }
+            <button onClick={handleLogout} className="flex items-center gap-1 text-sm text-gray-700 hover:text-red-600">
+                    <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                    <span className="hidden md:inline">Logout</span>
+                </button>
             
           </div>
 

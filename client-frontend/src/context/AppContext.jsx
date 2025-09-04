@@ -6,6 +6,9 @@ export const AppContextProvider = ({ children }) => {
     const eventServiceURL = 'http://localhost:8080/api/events';
     const userServiceURL = "http://localhost:8080/api/users";
     const seatingServiceURL = "http://localhost:8080/api/seating-charts";
+    const discountServiceURL = "http://localhost:8080/api/discounts";
+    const paymentServiceURL = "http://localhost:8080/api/payments";
+
     const [role, setRole] = useState(null);
     const [userID, setUserID] = useState();
     const [token, setToken] = useState(localStorage.getItem("EventToken") || null);
@@ -78,6 +81,8 @@ export const AppContextProvider = ({ children }) => {
         changeUserRole,
         userID,
         seatingServiceURL,
+        discountServiceURL,
+        paymentServiceURL,
         
     };
 
