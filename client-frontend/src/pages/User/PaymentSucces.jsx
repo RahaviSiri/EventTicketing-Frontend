@@ -4,6 +4,7 @@ import { CheckCircle, Download, Mail, Calendar, MapPin, Tag } from "lucide-react
 import { QRCodeCanvas } from "qrcode.react";
 import jsPDF from "jspdf";
 import { motion } from "framer-motion";
+import colors from "../../constants/colors";
 
 const PaymentSuccess = () => {
   const location = useLocation();
@@ -100,7 +101,7 @@ const PaymentSuccess = () => {
               ))}
             </div>
 
-            <div className="flex justify-between mt-4 font-bold text-lg text-blue-600">
+            <div style={{color : colors.primary}} className="flex justify-between mt-4 font-bold text-lg">
               <span>Total Paid</span>
               <span>Rs.{totalPrice}</span>
             </div>
@@ -124,7 +125,8 @@ const PaymentSuccess = () => {
 
           <button
             onClick={downloadTicket}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
+            style={{backgroundColor : colors.primary}}
+            className="w-full text-white py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
           >
             <Download size={16} /> Download Ticket
           </button>

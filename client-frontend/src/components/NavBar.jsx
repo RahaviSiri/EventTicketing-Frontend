@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Bars3Icon, XMarkIcon ,ArrowRightOnRectangleIcon} from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 import { AppContext } from '../context/AppContext';
 
 const Navbar = () => {
@@ -14,8 +14,8 @@ const Navbar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("EventToken");
-    window.location.href = "/login"; 
-};
+    window.location.href = "/login";
+  };
 
   const handleButtonClick = async () => {
     if (token) {
@@ -25,7 +25,7 @@ const Navbar = () => {
       navigate('/login');
     }
   }
- 
+
   return (
     <nav className="bg-white shadow sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -62,14 +62,14 @@ const Navbar = () => {
             >
               Contact
             </Link>
-            
+
             <button
               onClick={handleButtonClick}
-              className="bg-[#8076a3] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition duration-200"
+              className="bg-[#8076a3] text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200"
             >
               Create Event
             </button>
-            {!token && 
+            {!token &&
               <Link
                 to="/login"
                 className="text-gray-800 hover:text-gray-600 px-3 py-2 rounded-md text-sm font-medium"
@@ -77,11 +77,11 @@ const Navbar = () => {
                 Login
               </Link>
             }
-            <button onClick={handleLogout} className="flex items-center gap-1 text-sm text-gray-700 hover:text-red-600">
-                    <ArrowRightOnRectangleIcon className="h-5 w-5" />
-                    <span className="hidden md:inline">Logout</span>
-                </button>
-            
+            {token && <button onClick={handleLogout} className="flex items-center gap-1 text-sm text-gray-700 hover:text-red-600">
+              <ArrowRightOnRectangleIcon className="h-5 w-5" />
+              <span className="hidden md:inline">Logout</span>
+            </button>}
+
           </div>
 
           {/* Mobile Menu Button */}
@@ -132,16 +132,16 @@ const Navbar = () => {
             >
               Contact
             </Link>
-             <button
+            <button
               onClick={() => {
                 toggleMenu();
                 handleButtonClick();
               }}
-              className="bg-[#8076a3] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition duration-200"
+              className="bg-[#8076a3] text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200"
             >
               Create Event
             </button>
-            {!token && 
+            {!token &&
               <Link
                 to="/login"
                 onClick={toggleMenu}
@@ -150,7 +150,7 @@ const Navbar = () => {
                 Login
               </Link>
             }
-            
+
           </div>
         </div>
       )}
