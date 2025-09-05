@@ -57,7 +57,7 @@ const OrganizerNavBar = () => {
             }
         };
         document.addEventListener("mousedown", handler);
-        return () => document.removeEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler); // Clean Up
     }, []);
     // Runs only once — when the component loads.
 

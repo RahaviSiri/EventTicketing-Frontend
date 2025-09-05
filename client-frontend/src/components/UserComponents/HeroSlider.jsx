@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import colors from "../../constants/colors";
+import { useNavigate } from "react-router-dom";
 
 const slides = [
   {
@@ -38,6 +39,7 @@ const slides = [
 
 const HeroSlider = () => {
   const [current, setCurrent] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -66,6 +68,7 @@ const HeroSlider = () => {
                 {slides[current].subtitle}
               </p>
               <motion.button
+                onClick={() => navigate('/events')}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 style={{ backgroundColor: colors.primary }}

@@ -2,6 +2,8 @@ import React, { useState, useEffect, useContext } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Calendar, MapPin, Users, Clock, Star } from "lucide-react";
 import { AppContext } from "../../context/AppContext";
+import { color } from "framer-motion";
+import colors from "../../constants/colors";
 
 const EventDetail = () => {
   const { eventId } = useParams();
@@ -168,19 +170,19 @@ const [normalPrice, setNormalPrice] = useState(0);
             <h3 className="text-xl font-semibold text-gray-900 mb-6">Event Details</h3>
             <div className="grid md:grid-cols-2 gap-6">
               <DetailCard
-                icon={<Calendar className="h-6 w-6 text-blue-600" />}
+                icon={<Calendar style={{color : colors.accent}} className="h-6 w-6" />}
                 title="Start Date"
                 value={`${new Date(event.startDate).toLocaleDateString()} • ${event.startTime}`}
               />
               {event.endDate && (
                 <DetailCard
-                  icon={<Clock className="h-6 w-6 text-blue-600" />}
+                  icon={<Clock style={{color : colors.accent}} className="h-6 w-6" />}
                   title="End Date"
                   value={`${new Date(event.endDate).toLocaleDateString()} • ${event.endTime}`}
                 />
               )}
               <DetailCard
-                icon={<MapPin className="h-6 w-6 text-blue-600" />}
+                icon={<MapPin style={{color : colors.accent}} className="h-6 w-6 " />}
                 title="Venue"
                 value={
                   <>
@@ -190,7 +192,7 @@ const [normalPrice, setNormalPrice] = useState(0);
                 }
               />
               <DetailCard
-                icon={<Users className="h-6 w-6 text-blue-600" />}
+                icon={<Users style={{color : colors.accent}} className="h-6 w-6" />}
                 title="Capacity"
                 value={
                   <>
@@ -217,7 +219,7 @@ const [normalPrice, setNormalPrice] = useState(0);
 
               {/* Normal Price */}
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600 mb-1">
+                <div style={{color : colors.primary}} className="text-2xl font-bold mb-1">
                   Rs. {normalPrice?.toLocaleString("en-LK") || "0"}
                 </div>
                 <p className="text-gray-600">Normal ticket</p>
@@ -242,7 +244,8 @@ const [normalPrice, setNormalPrice] = useState(0);
 
             <button
               onClick={handleBookNow}
-              className="w-full bg-blue-600 text-white hover:bg-blue-700 py-4 rounded-lg font-semibold shadow-md transition-colors"
+              style={{backgroundColor : colors.primary}}
+              className="w-full  text-white  py-4 rounded-lg font-semibold shadow-md transition-colors"
             >
               Select Seats & Book Now
             </button>

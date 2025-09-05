@@ -17,6 +17,7 @@ import { AppContext } from '../../context/AppContext';
 
 const EventsList = () => {
     const [events, setEvents] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
     const [anchorEl, setAnchorEl] = useState(null);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const navigate = useNavigate();
@@ -48,6 +49,14 @@ const EventsList = () => {
         console.log("UserID in EventsList:", userID);
         console.log(events);
     }, [token, userID]);
+
+    // Filter events by search
+    const filteredEvents = events.filter((e) => {
+        const title = e.event?.name || '';
+        const location = e.event?.location || '';
+        return title.toLowerCase().includes(searchTerm.toLowerCase()) || // In JavaScript, any string includes the empty string.
+               location.toLowerCase().includes(searchTerm.toLowerCase());
+    });
 
     const handleCardClick = (event) => {
         navigate(`/organizers/eventDetails`, { state: { event } });
@@ -87,9 +96,9 @@ const EventsList = () => {
 
     return (
         <div className="flex flex-col">
-            <ViewEventHeader />
+            <ViewEventHeader searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6 px-4">
-                {events.map((event) => (
+                {filteredEvents.map((event) => (
                     <Card
                         key={event.event.id}
                         sx={{ maxWidth: 350, backgroundColor: '#faf8f5', cursor: 'pointer' }}
