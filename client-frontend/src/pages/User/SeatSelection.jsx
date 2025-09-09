@@ -46,11 +46,14 @@ const SeatSelection = () => {
     const isSelected = selectedSeats.some((s) => s.seatNumber === seatInfo.seatNumber);
 
     const fillColor =
-      seatInfo.status === "booked"
-        ? "#FF0000"
-        : seatInfo.seatType === "VIP"
-        ? "#FFD700"
-        : colors.primary;
+  seatInfo.status === "booked"
+    ? "#FF0000" // red for booked
+    : seatInfo.status === "reserved"
+    ? "#A0A0A0" // gray for reserved
+    : seatInfo.seatType === "VIP"
+    ? "#FFD700" // yellow for VIP
+    : colors.primary; // normal seats
+
 
     const seat = new Konva.Circle({
       x: seatInfo.x,
@@ -62,26 +65,58 @@ const SeatSelection = () => {
       name: `seat-${seatInfo.seatNumber}`,
     });
 
-    seat.on("click", () => {
-      if (seatInfo.status === "booked") return;
+    seat.on("click", async () => {
+  if (seatInfo.status === "booked") return; // cannot click booked seats
 
-      setSelectedSeats((prev) => {
-        const alreadySelected = prev.some((s) => s.seatNumber === seatInfo.seatNumber);
-        let updated;
+  const alreadySelected = selectedSeats.some(
+    (s) => s.seatNumber === seatInfo.seatNumber
+  );
 
-        if (alreadySelected) {
-          updated = prev.filter((s) => s.seatNumber !== seatInfo.seatNumber);
-        } else {
-          updated = [...prev, seatInfo]; // store full object
+  try {
+    if (alreadySelected) {
+      // --- Release seat ---
+      const res = await fetch(
+        `${seatingServiceURL}/${eventId}/release/${seatInfo.seatNumber}`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
         }
+      );
 
-        seat.stroke(updated.some((s) => s.seatNumber === seatInfo.seatNumber) ? "red" : null);
-        seat.strokeWidth(updated.some((s) => s.seatNumber === seatInfo.seatNumber) ? 3 : 0);
-        layerRef.current.draw();
+      if (res.ok) {
+        seatInfo.status = "available"; // update local status
+        setSelectedSeats((prev) =>
+          prev.filter((s) => s.seatNumber !== seatInfo.seatNumber)
+        );
+      }
+    } else {
+      // --- Reserve seat ---
+      const res = await fetch(
+        `${seatingServiceURL}/${eventId}/reserve/${seatInfo.seatNumber}`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+        
+      );
+      console.log(token);
+      if (res.ok) {
+        seatInfo.status = "reserved"; // update local status
+        setSelectedSeats((prev) => [...prev, seatInfo]);
+      } else {
+        alert("Seat not available!");
+      }
+    }
 
-        return updated;
-      });
-    });
+    // update stroke color & redraw
+    seat.stroke(seatInfo.status === "reserved" ? "red" : null);
+    seat.strokeWidth(seatInfo.status === "reserved" ? 3 : 0);
+    layerRef.current.draw();
+  } catch (err) {
+    console.error(err);
+  }
+});
+
 
     layerRef.current.add(seat);
   };
@@ -124,17 +159,48 @@ const SeatSelection = () => {
 
   const totalPrice = selectedSeats.reduce((total, seat) => total + seat.price, 0);
 
-  const handleBooking = () => {
-    if (selectedSeats.length === 0) {
-      alert("Please select at least one seat");
-      return;
-    }
+  const handleBooking = async () => {
+  if (selectedSeats.length === 0) {
+    alert("Please select at least one seat");
+    return;
+  }
 
-    // Pass full seat objects
-    navigate(`/events/${eventId}/payment`, {
-      state: { event, selectedSeats, totalPrice },
-    });
-  };
+  const seatNumbers = selectedSeats.map((s) => s.seatNumber);
+
+  try {
+    const res = await fetch(
+      `${seatingServiceURL}/${eventId}/confirm`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ seatNumbers }),
+      }
+    );
+
+    if (res.ok) {
+      const updated = await res.json();
+      updated.forEach((seatResult) => {
+        const seat = seatsDataRef.current.find(
+          (s) => s.seatNumber === seatResult.seatNumber
+        );
+        if (seat) seat.status = "booked";
+      });
+
+      alert("Seats booked successfully!");
+      navigate(`/events/${eventId}/payment`, {
+        state: { event, selectedSeats, totalPrice },
+      });
+    } else {
+      alert("Booking failed. Please try again.");
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 
   return (
     <div className="max-w-7xl mx-auto p-6 grid lg:grid-cols-4 gap-8">
@@ -170,6 +236,10 @@ const SeatSelection = () => {
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-full bg-red-600"></div>
             <span className="text-gray-700">Booked</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 rounded-full bg-gray-400"></div>
+            <span className="text-gray-700">Reserved</span>
           </div>
         </div>
       </motion.div>

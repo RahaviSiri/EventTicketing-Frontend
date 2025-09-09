@@ -17,47 +17,72 @@ const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { paymentServiceURL } = useContext(AppContext);
+  const { paymentServiceURL, token } = useContext(AppContext);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
 
+  try {
+    console.log("token:", token);
+
+    // ✅ Send request to backend
+    const res = await fetch(`${paymentServiceURL}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        userId: 1, // TODO: replace with actual logged-in user ID
+        ticketId: selectedSeats[0]?.id,
+        amount: totalPrice,  // ✅ send whole units (backend multiplies if needed)
+        currency: "USD",     // ⚠️ change to USD/EUR for test mode (LKR not supported)
+        paymentMethod: "card",
+      }),
+    });
+
+    // ✅ Handle text response safely
+    const text = await res.text();
+    let data;
     try {
-      const res = await fetch(`${paymentServiceURL}/create-payment-intent`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: totalPrice * 100,
-          currency: "LKR",
-          eventId: event.id,
-          seats: selectedSeats, // full objects
-        }),
-      });
-
-      const { clientSecret } = await res.json();
-
-      const result = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: elements.getElement(CardElement),
-          billing_details: { name: "Customer Name" },
-        },
-      });
-
-      if (result.error) {
-        setError(result.error.message);
-      } else if (result.paymentIntent.status === "succeeded") {
-        navigate(`/events/${event.id}/success`, {
-          state: { event, selectedSeats, totalPrice },
-        });
-      }
-    } catch (err) {
-      setError(err.message);
+      data = text ? JSON.parse(text) : {};
+    } catch (parseErr) {
+      setError("Server returned invalid JSON: " + parseErr.message);
+      setLoading(false);
+      return;
     }
 
-    setLoading(false);
-  };
+    const clientSecret = data.clientSecret;
+    if (!clientSecret) {
+      setError(data.message || `Payment endpoint returned status ${res.status}`);
+      setLoading(false);
+      return;
+    }
+
+    // ✅ Confirm card payment with Stripe
+    const result = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: {
+        card: elements.getElement(CardElement),
+        billing_details: { name: "Customer Name" },
+      },
+    });
+
+    if (result.error) {
+      setError(result.error.message);
+    } else if (result.paymentIntent.status === "succeeded") {
+      navigate(`/events/${event.id}/success`, {
+        state: { event, selectedSeats, totalPrice },
+      });
+    }
+  } catch (err) {
+    setError(err.message);
+  }
+
+  setLoading(false);
+};
+
 
   return (
     <motion.form
@@ -71,24 +96,6 @@ const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
         <CreditCard size={24} /> Payment Details
       </h2>
 
-      {/* Event Summary */}
-      {/* <div className="p-4 bg-gray-50 rounded-lg shadow-sm space-y-2">
-        <p><strong>Event:</strong> {event.name}</p>
-        <p><strong>Venue:</strong> {event.venue?.name || "N/A"}</p>
-        <p><strong>City:</strong> {event.venue?.city || "N/A"}</p>
-        <p><strong>Date:</strong> {new Date(event.startDate).toLocaleString()}</p>
-        <div>
-          <strong>Seats:</strong>
-          <ul className="list-disc list-inside">
-            {selectedSeats?.map((seat, index) => (
-              <li key={index}>
-                {seat.seatNumber} – {seat.seatType} (Rs.{seat.price})
-              </li>
-            )) || <li>No seats selected</li>}
-          </ul>
-        </div>
-        <p className="text-lg font-semibold text-blue-600">Total: Rs.{totalPrice}</p>
-      </div> */}
 
       {/* Card Input */}
       <div className="p-4 border rounded-lg bg-white shadow-sm">

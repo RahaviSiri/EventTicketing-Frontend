@@ -185,7 +185,7 @@ const [normalPrice, setNormalPrice] = useState(0);
                 value={
                   <>
                     {event.venue?.name}
-                    <p className="text-gray-500 text-sm">{event.venue?.address}</p>
+                    <div className="text-gray-500 text-sm">{event.venue?.address}</div>
                   </>
                 }
               />
@@ -195,7 +195,7 @@ const [normalPrice, setNormalPrice] = useState(0);
                 value={
                   <>
                     {totalSeats} seats total
-                    <p className="text-green-600 text-sm">{availableSeats} available</p>
+                    <div className="text-green-600 text-sm">{availableSeats} available</div>
                   </>
                 }
               />
@@ -259,7 +259,7 @@ const DetailCard = ({ icon, title, value }) => (
     {icon}
     <div>
       <p className="font-medium text-gray-900">{title}</p>
-      <p className="text-gray-600 text-sm">{value}</p>
+      <div className="text-gray-600 text-sm">{value}</div>
     </div>
   </div>
 );
