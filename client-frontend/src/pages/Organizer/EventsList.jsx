@@ -14,6 +14,7 @@ import MenuItem from '@mui/material/MenuItem';
 import ViewEventHeader from '../../components/OrganizerComponents/ViewEventHeader';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../../context/AppContext';
+import { HeaderContext } from '../../context/HeaderContext';
 
 const EventsList = () => {
     const [events, setEvents] = useState([]);
@@ -21,24 +22,15 @@ const EventsList = () => {
     const [anchorEl, setAnchorEl] = useState(null);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const navigate = useNavigate();
-    const { eventServiceURL, userID, token } = useContext(AppContext);
+    const { userID } = useContext(AppContext);
+    const { api } = useContext(HeaderContext);
 
     useEffect(() => {
         const fetchEvents = async () => {
             if (!userID) return; // wait until userID is available
             const id = parseInt(userID, 10);
             try {
-                const res = await fetch(`${eventServiceURL}/organizer/${id}`, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`
-                    },
-                });
-
-                if (!res.ok) throw new Error("Failed to fetch events");
-
-                const data = await res.json();
+                const data = await api.getEventsByOrganizer(id);
                 setEvents(data);
                 console.log("Fetched events:", data);
             } catch (error) {
@@ -48,7 +40,7 @@ const EventsList = () => {
         fetchEvents();
         console.log("UserID in EventsList:", userID);
         console.log(events);
-    }, [token, userID]);
+    }, [api ,userID]);
 
     // Filter events by search
     const filteredEvents = events.filter((e) => {
@@ -80,13 +72,7 @@ const EventsList = () => {
     };
 
     const handleDelete = () => {
-        fetch(`${eventServiceURL}/${selectedEvent.id}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`
-            },
-        })
+        api.deleteEvent(selectedEvent.id)
             .then(() => {
                 setEvents(events.filter(e => e.event.id !== selectedEvent.id));
                 handleMenuClose()

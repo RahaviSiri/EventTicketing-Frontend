@@ -44,7 +44,7 @@ const OrganizerNavBar = () => {
 
     const handleChangeRole = async () => {
         await changeUserRole("ATTENDEE");
-        navigate("/");
+        navigate("/home");
     }
     
     useEffect(() => {

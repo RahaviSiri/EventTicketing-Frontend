@@ -2,12 +2,14 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AppContext } from "../../context/AppContext";
 import colors from '../../constants/colors';
+import { HeaderContext } from "../../context/HeaderContext";
 
 const AddEvent = () => {
   const navigate = useNavigate();
   const { id } = useParams(); // Get event ID from URL
   const isEditMode = Boolean(id); // Check if we are editing
-  const { eventServiceURL, userID, token } = useContext(AppContext);
+  const { userID,  } = useContext(AppContext);
+  const { api } = useContext(HeaderContext);
 
   const [form, setForm] = useState({
     organizerId: userID,
@@ -35,23 +37,14 @@ const AddEvent = () => {
   // Fetch existing event details if editing
   useEffect(() => {
     if (isEditMode) {
-      fetch(`${eventServiceURL}/${id}`,{
-        headers: {
-          Authorization: `Bearer ${token}`
-          // 'Content-Type' is NOT needed for FormData
-        }
-      })
-        .then((res) => {
-          if (!res.ok) throw new Error("Failed to fetch event details");
-          return res.json();
-        })
+      api.getEventById(id)
         .then((data) => {
           setForm({
             ...data,
             venue: data.venue || form.venue,
           });
         })
-        .catch((err) => console.error(err));
+        .catch((err) => console.error("Failed to fetch event details:", err));
     }
   }, [id]);
 
@@ -77,40 +70,37 @@ const AddEvent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const Backend_URL = `${eventServiceURL}${isEditMode ? `/${id}` : ""}`;
 
     try {
       const formData = new FormData();
-      formData.append("event", new Blob([JSON.stringify(form)], { type: "application/json" }));
+      formData.append(
+        "event",
+        new Blob([JSON.stringify(form)], { type: "application/json" })
+      );
       if (imageFile) formData.append("image", imageFile);
 
-      const res = await fetch(Backend_URL, {
-        method: isEditMode ? "PUT" : "POST",
-        body: formData,
-        headers: {
-          Authorization: `Bearer ${token}`
-          // 'Content-Type' is NOT needed for FormData
-        }
-      });
+      const res = await api.createOrUpdateEvent(id, formData, isEditMode);
 
       if (!res.ok) {
         const errText = await res.text();
-        throw new Error(`Request failed (${res.status}): ${errText || res.statusText}`);
+        throw new Error(
+          `Request failed (${res.status}): ${errText || res.statusText}`
+        );
       }
 
-      if (res.ok) {
-        alert(`Event ${isEditMode ? "updated" : "created"} successfully!`);
-        const savedEvent = await res.json();
-        console.log("Saved event:", savedEvent);
-        
-        // Pass saved event to seating designer
-        navigate("/organizers/designLayout", {
-          state: { event: savedEvent },
-        });
-      }
+      const savedEvent = await res.json();
+      alert(`Event ${isEditMode ? "updated" : "created"} successfully!`);
+      console.log("Saved event:", savedEvent);
+
+      // Pass saved event to seating designer
+      navigate("/organizers/designLayout", {
+        state: { event: savedEvent },
+      });
     } catch (err) {
       console.error(err);
-      alert(`Failed to ${isEditMode ? "update" : "create"} event: ${err.message}`);
+      alert(
+        `Failed to ${isEditMode ? "update" : "create"} event: ${err.message}`
+      );
     }
   };
 

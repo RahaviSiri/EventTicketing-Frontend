@@ -3,26 +3,18 @@ import colors from "../../constants/colors";
 import { AppContext } from "../../context/AppContext";
 import Charts from './Charts';
 import Graphs from "./Graphs";
+import { HeaderContext } from "../../context/HeaderContext";
 
 const Dashboard = () => {
-  const { eventServiceURL, userID, token } = useContext(AppContext);
+  const { userID } = useContext(AppContext);
   const [events, setEvents] = useState([]);
+  const { api } = useContext(HeaderContext);
 
   const fetchEvents = async () => {
     if (!userID) return; // wait until userID is available
-    const id = parseInt(userID, 10);
     try {
-      const res = await fetch(`${eventServiceURL}/organizer/${id}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-      });
-
-      if (!res.ok) throw new Error("Failed to fetch events");
-
-      const data = await res.json();
+      const data = await api.getEventsByOrganizer(userID);
+      // console.log("Data: " + data);
 
       // Sort events by startDate (earliest first)
       const sortedEvents = [...data].sort(
@@ -38,7 +30,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchEvents();
-  }, [userID, token]);
+  }, [userID, api]);
 
   // Earliest event for top card
   const upcomingEvents = events.filter((item) => new Date(item.event.endDate) >= new Date());
