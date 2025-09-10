@@ -11,6 +11,7 @@ export const HeaderProvider = ({ children }) => {
     seatingServiceURL,
     discountServiceURL,
     paymentServiceURL,
+    orderServiceURL,
     userID,
     token,
   } = useContext(AppContext);
@@ -118,6 +119,20 @@ export const HeaderProvider = ({ children }) => {
         body: JSON.stringify(paymentData),
       });
     },
+    // ---------------- Orders ----------------
+    getOrdersByEvent: async (eventId) => {
+      const res = await fetch(`${orderServiceURL}/event/${eventId}`, {
+        headers: getHeaders(false),
+      });
+      return res.json();
+    },
+    getOrdersByUser: async (userId) => {
+      const res = await fetch(`${orderServiceURL}/user/${userId}`, {
+        headers: getHeaders(false),
+      });
+      return res.json();
+    },
+    
   };
 
   return (

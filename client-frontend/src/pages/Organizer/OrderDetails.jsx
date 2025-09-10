@@ -1,38 +1,67 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import colors from "../../constants/colors";
 import { MdReceipt } from "react-icons/md";
-
-// Dummy events
-const events = [
-  { id: 1, name: "Music Fest 2025" },
-  { id: 2, name: "Tech Conference 2025" },
-  { id: 3, name: "Charity Gala Dinner" },
-];
-
-// Dummy orders (normally you’d fetch based on eventId)
-const ordersData = {
-  1: [
-    { id: "ORD123", attendee: "John Doe", email: "john@example.com", ticket: "VIP", price: "LKR 5000", status: "Paid", date: "Aug 20, 2025", checkIn: true },
-    { id: "ORD124", attendee: "Jane Smith", email: "jane@example.com", ticket: "Regular", price: "LKR 2000", status: "Pending", date: "Aug 21, 2025", checkIn: false },
-  ],
-  2: [
-    { id: "ORD201", attendee: "Sam Perera", email: "sam@example.com", ticket: "Standard", price: "LKR 3000", status: "Paid", date: "Sep 01, 2025", checkIn: false },
-  ],
-  3: [
-    { id: "ORD301", attendee: "Ravi Kumar", email: "ravi@example.com", ticket: "Donor", price: "LKR 10,000", status: "Paid", date: "Oct 01, 2025", checkIn: true },
-  ],
-};
+import { HeaderContext } from "../../context/HeaderContext"
+import { AppContext } from "../../context/AppContext";
 
 const OrderDetails = () => {
-  const [selectedEvent, setSelectedEvent] = useState(events[0].id);
-  const orders = ordersData[selectedEvent] || [];
+  const [events, setEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState("");
+  const { api } = useContext(HeaderContext);
+  const { userID } = useContext(AppContext);
+  const [orders, setOrders] = useState([]);
+
+  const fetchEvents = async () => {
+    if (!userID) return;
+    // console.log(userID);
+    try {
+      const data = await api.getEventsByOrganizer(userID);
+      console.log(data);
+      setEvents(data);
+      if (data.length > 0) {
+        setSelectedEvent(data[0].event.id);
+
+      }
+    } catch (error) {
+      console.log("Error in fetching events" + error);
+    }
+  }
+
+  const fetchOrders = async (eventID) => {
+    if (!eventID) return;
+    try {
+      const res = await api.getOrdersByEvent(eventID);
+      if (Array.isArray(res)) {
+        setOrders(res);
+      } else {
+        console.warn("Expected array but got:", res);
+        setOrders([]);
+      }
+    } catch (error) {
+      console.error(`Error fetching orders for event ID ${eventID}:`, error);
+      setOrders([]);
+    }
+  };
+
+
+  useEffect(() => {
+    fetchEvents();
+    // console.log(events);
+  }, [api, userID])
+
+  useEffect(() => {
+    if (selectedEvent) {
+      console.log(selectedEvent);
+      fetchOrders(selectedEvent);
+    }
+  }, [selectedEvent]);
 
   return (
     <div className="p-6 space-y-6">
       <div style={{ backgroundColor: colors.primary }} className="rounded-2xl p-6 shadow-lg text-white space-y-2">
         {/* Page Title */}
         <h1 className="text-xl font-bold flex items-center gap-2">
-          <MdReceipt size={24} /> 
+          <MdReceipt size={24} />
           Order Details
         </h1>
 
@@ -62,8 +91,8 @@ const OrderDetails = () => {
           }}
         >
           {events.map((event) => (
-            <option key={event.id} value={event.id}>
-              {event.name}
+            <option key={event.event.id} value={event.event.id}>
+              {event.event.name}
             </option>
           ))}
         </select>
