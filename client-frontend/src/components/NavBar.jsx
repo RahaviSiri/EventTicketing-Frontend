@@ -14,7 +14,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("EventToken");
-    window.location.href = "/login";
+    window.location.href = "/";
   };
 
   const handleButtonClick = async () => {
@@ -39,7 +39,7 @@ const Navbar = () => {
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-4">
             <Link
-              to="/"
+              to="/home"
               className="text-gray-800 hover:text-gray-600 px-3 py-2 rounded-md text-sm font-medium"
             >
               Home
@@ -105,7 +105,7 @@ const Navbar = () => {
         <div className="md:hidden bg-white shadow">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             <Link
-              to="/"
+              to="/home"
               onClick={toggleMenu}
               className="text-gray-800 hover:text-gray-600 block px-3 py-2 rounded-md text-base font-medium"
             >

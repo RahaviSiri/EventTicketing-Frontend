@@ -7,10 +7,6 @@ import Login from './pages/Login.jsx';
 const App = () => {
   const { role } = useContext(AppContext);
 
-  // if (!role) {
-  //   return <Login />;
-  // }
-
   if (role === "ORGANIZER") {
     return <OrganizerLayout />;
   }
@@ -18,8 +14,6 @@ const App = () => {
   if (role === "ATTENDEE" || role === null) {
     return <AttendeeLayout />;
   }
-
-  // return <div>Invalid role</div>; 
 };
 
 export default App;

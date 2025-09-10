@@ -2,13 +2,14 @@ import React, { useContext, useEffect, useState } from "react";
 import colors from "../../constants/colors";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AppContext } from "../../context/AppContext";
+import { HeaderContext } from "../../context/HeaderContext";
 
 const EventDetailsPage = () => {
   const location = useLocation();
   const event = location.state?.event;
   const [seatingChart, setSeatingChart] = useState({});
-  const { seatingServiceURL, token, discountServiceURL } = useContext(AppContext);
   const [discounts, setDiscounts] = useState([]);
+  const { api } = useContext(HeaderContext);
 
   const navigate = useNavigate();
 
@@ -19,10 +20,8 @@ const EventDetailsPage = () => {
   useEffect(() => {
     const fetchSeatingChart = async () => {
       try {
-        const res = await fetch(`${seatingServiceURL}/event/${event.id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
+        const data = await api.getSeatingByEvent(event.id);
+        // console.log("data: " + data.layoutJson);
         const layout = JSON.parse(data.layoutJson);
         setSeatingChart(layout);
       } catch (err) {
@@ -32,10 +31,7 @@ const EventDetailsPage = () => {
 
     const fetchDiscounts = async () => {
       try {
-        const res = await fetch(`${discountServiceURL}/event/${event.id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
+        const data = await api.getDiscountsByEvent(event.id);
         setDiscounts(data);
       } catch (err) {
         console.error("Error fetching discounts:", err);
