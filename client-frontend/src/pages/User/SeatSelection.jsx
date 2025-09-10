@@ -20,6 +20,7 @@ const SeatSelection = () => {
   const seatsDataRef = useRef([]);
 
   const [selectedSeats, setSelectedSeats] = useState([]);
+  const [reservedSeats, setReservedSeats] = useState([]); // keeps all successfully reserved seats
   const [vipPrice, setVipPrice] = useState(0);
   const [normalPrice, setNormalPrice] = useState(0);
 
@@ -46,14 +47,13 @@ const SeatSelection = () => {
     const isSelected = selectedSeats.some((s) => s.seatNumber === seatInfo.seatNumber);
 
     const fillColor =
-  seatInfo.status === "booked"
-    ? "#FF0000" // red for booked
-    : seatInfo.status === "reserved"
-    ? "#A0A0A0" // gray for reserved
-    : seatInfo.seatType === "VIP"
-    ? "#FFD700" // yellow for VIP
-    : colors.primary; // normal seats
-
+      seatInfo.status === "booked"
+        ? "#FF0000"
+        : seatInfo.status === "reserved"
+        ? "#A0A0A0"
+        : seatInfo.seatType === "VIP"
+        ? "#FFD700"
+        : colors.primary;
 
     const seat = new Konva.Circle({
       x: seatInfo.x,
@@ -65,60 +65,41 @@ const SeatSelection = () => {
       name: `seat-${seatInfo.seatNumber}`,
     });
 
-    seat.on("click", async () => {
-  if (seatInfo.status === "booked") return; // cannot click booked seats
-
-  const alreadySelected = selectedSeats.some(
-    (s) => s.seatNumber === seatInfo.seatNumber
-  );
-
-  try {
-    if (alreadySelected) {
-      // --- Release seat ---
-      const res = await fetch(
-        `${seatingServiceURL}/${eventId}/release/${seatInfo.seatNumber}`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (res.ok) {
-        seatInfo.status = "available"; // update local status
-        setSelectedSeats((prev) =>
-          prev.filter((s) => s.seatNumber !== seatInfo.seatNumber)
-        );
-      }
-    } else {
-      // --- Reserve seat ---
-      const res = await fetch(
-        `${seatingServiceURL}/${eventId}/reserve/${seatInfo.seatNumber}`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-        
-      );
-      console.log(token);
-      if (res.ok) {
-        seatInfo.status = "reserved"; // update local status
-        setSelectedSeats((prev) => [...prev, seatInfo]);
-      } else {
-        alert("Seat not available!");
-      }
-    }
-
-    // update stroke color & redraw
-    seat.stroke(seatInfo.status === "reserved" ? "red" : null);
-    seat.strokeWidth(seatInfo.status === "reserved" ? 3 : 0);
-    layerRef.current.draw();
-  } catch (err) {
-    console.error(err);
-  }
-});
-
+    const seatText = new Konva.Text({
+      x: seatInfo.x - 10,
+      y: seatInfo.y - 8,
+      text: seatInfo.seatNumber,
+      fontSize: 12,
+      fontFamily: "Arial",
+      fill: "black",
+    });
 
     layerRef.current.add(seat);
+    layerRef.current.add(seatText);
+
+    seat.on("click", () => {
+      if (seatInfo.status === "booked" ) return;
+
+      setSelectedSeats((prev) => {
+        const isAlreadySelected = prev.some(
+          (s) => s.seatNumber === seatInfo.seatNumber
+        );
+
+        let updated;
+        if (isAlreadySelected) {
+          updated = prev.filter((s) => s.seatNumber !== seatInfo.seatNumber);
+          seat.stroke(null);
+          seat.strokeWidth(0);
+        } else {
+          updated = [...prev, { ...seatInfo }];
+          seat.stroke("red");
+          seat.strokeWidth(3);
+        }
+
+        layerRef.current.draw();
+        return updated;
+      });
+    });
   };
 
   // --- Fetch seating layout ---
@@ -127,12 +108,9 @@ const SeatSelection = () => {
       if (!eventId) return;
 
       try {
-        const res = await fetch(
-          `${seatingServiceURL}/event/${eventId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const res = await fetch(`${seatingServiceURL}/event/${eventId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         if (!res.ok) throw new Error("Failed to fetch seating layout");
 
@@ -159,7 +137,8 @@ const SeatSelection = () => {
 
   const totalPrice = selectedSeats.reduce((total, seat) => total + seat.price, 0);
 
-  const handleBooking = async () => {
+  // --- Handle Booking ---
+const handleBooking = async () => {
   if (selectedSeats.length === 0) {
     alert("Please select at least one seat");
     return;
@@ -168,39 +147,46 @@ const SeatSelection = () => {
   const seatNumbers = selectedSeats.map((s) => s.seatNumber);
 
   try {
-    const res = await fetch(
-      `${seatingServiceURL}/${eventId}/confirm`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ seatNumbers }),
-      }
-    );
+    const res = await fetch(`${seatingServiceURL}/${eventId}/reserve`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ seatNumbers }),
+    });
 
-    if (res.ok) {
-      const updated = await res.json();
-      updated.forEach((seatResult) => {
-        const seat = seatsDataRef.current.find(
-          (s) => s.seatNumber === seatResult.seatNumber
-        );
-        if (seat) seat.status = "booked";
-      });
+    const data = await res.json();
+    console.log(data);
 
-      alert("Seats booked successfully!");
-      navigate(`/events/${eventId}/payment`, {
-        state: { event, selectedSeats, totalPrice },
-      });
+    if (!data.success && data.unavailableSeats?.length > 0) {
+      // Show unavailable seats to the user
+      const failNumbers = data.unavailableSeats.join(", ");
+      alert(`Some seats could not be reserved: ${failNumbers}. Please select other seats.`);
+
+      // Keep only the unavailable seats selected so user can reselect
+      const failedSeats = selectedSeats.filter(s =>
+        data.unavailableSeats.includes(s.seatNumber)
+      );
+      setSelectedSeats(failedSeats);
     } else {
-      alert("Booking failed. Please try again.");
+      // All seats successfully reserved, navigate to payment
+      const allReservedSeats = [...selectedSeats]; // all selected are now reserved
+      const totalPrice = allReservedSeats.reduce(
+        (total, seat) => total + seat.price,
+        0
+      );
+      navigate(`/events/${eventId}/payment`, {
+        state: { event, selectedSeats: allReservedSeats, totalPrice },
+      });
     }
+
+    layerRef.current.draw();
   } catch (err) {
     console.error(err);
+    alert("Reservation failed. Please try again.");
   }
 };
-
 
   return (
     <div className="max-w-7xl mx-auto p-6 grid lg:grid-cols-4 gap-8">

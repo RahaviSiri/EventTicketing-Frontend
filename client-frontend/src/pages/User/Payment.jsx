@@ -17,8 +17,8 @@ const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { paymentServiceURL, token } = useContext(AppContext);
-
+  const { paymentServiceURL,seatingServiceURL ,token } = useContext(AppContext);
+  const eventId = event?.id;
   const handleSubmit = async (e) => {
   e.preventDefault();
   setLoading(true);
@@ -70,12 +70,40 @@ const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
     });
 
     if (result.error) {
-      setError(result.error.message);
-    } else if (result.paymentIntent.status === "succeeded") {
-      navigate(`/events/${event.id}/success`, {
-        state: { event, selectedSeats, totalPrice },
-      });
+  setError(result.error.message);
+} else if (result.paymentIntent.status === "succeeded") {
+  try {
+    // Extract seat numbers from selectedSeats
+    const seatNumbers = selectedSeats.map((s) => s.seatNumber);
+
+    const res = await fetch(`${seatingServiceURL}/${eventId}/confirm`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ seatNumbers }),
+    });
+
+    if (!res.ok) {
+      const errData = await res.json();
+      alert(`Failed to confirm seats: ${errData.message || "Unknown error"}`);
+      return;
     }
+
+    // const data = await res.json();
+    console.log("Seats confirmed:");
+
+    // Navigate to success page
+    navigate(`/events/${event.id}/success`, {
+      state: { event, selectedSeats, totalPrice },
+    });
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  }
+}
+
   } catch (err) {
     setError(err.message);
   }
