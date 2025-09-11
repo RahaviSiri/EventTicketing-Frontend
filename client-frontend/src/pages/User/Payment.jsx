@@ -18,47 +18,124 @@ const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { paymentServiceURL } = useContext(AppContext);
-
+  const { paymentServiceURL,seatingServiceURL , ticketServiceURL,token , userID} = useContext(AppContext);
+  const eventId = event?.id;
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
 
+  try {
+    console.log("token:", token);
+
+    const res = await fetch(`${paymentServiceURL}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        userId: userID, 
+        amount: totalPrice, 
+        currency: "USD",    
+        paymentMethod: "card",
+      }),
+    });
+
+    const text = await res.text();
+    let data;
     try {
-      const res = await fetch(`${paymentServiceURL}/create-payment-intent`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: totalPrice * 100,
-          currency: "LKR",
-          eventId: event.id,
-          seats: selectedSeats, // full objects
-        }),
-      });
-
-      const { clientSecret } = await res.json();
-
-      const result = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: elements.getElement(CardElement),
-          billing_details: { name: "Customer Name" },
-        },
-      });
-
-      if (result.error) {
-        setError(result.error.message);
-      } else if (result.paymentIntent.status === "succeeded") {
-        navigate(`/events/${event.id}/success`, {
-          state: { event, selectedSeats, totalPrice },
-        });
-      }
-    } catch (err) {
-      setError(err.message);
+      data = text ? JSON.parse(text) : {};
+    } catch (parseErr) {
+      setError("Server returned invalid JSON: " + parseErr.message);
+      setLoading(false);
+      return;
     }
 
-    setLoading(false);
-  };
+    const clientSecret = data.clientSecret;
+    if (!clientSecret) {
+      setError(data.message || `Payment endpoint returned status ${res.status}`);
+      setLoading(false);
+      return;
+    }
+
+    const result = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: {
+        card: elements.getElement(CardElement),
+        billing_details: { name: "Customer Name" },
+      },
+    });
+
+    if (result.error) {
+  setError(result.error.message);
+} else if (result.paymentIntent.status === "succeeded") {
+  try {
+    // Extract seat numbers from selectedSeats
+    const seatNumbers = selectedSeats.map((s) => s.seatNumber);
+
+    const res = await fetch(`${seatingServiceURL}/${eventId}/confirm`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ seatNumbers }),
+    });
+
+    if (!res.ok) {
+      const errData = await res.json();
+      alert(`Failed to confirm seats: ${errData.message || "Unknown error"}`);
+      return;
+    }
+
+    console.log("Seats confirmed:");
+
+
+    const resp = await fetch(`${ticketServiceURL}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+     body: JSON.stringify({
+      eventId: event.id,
+      userId: userID,         
+      seatNumbers: selectedSeats.map(s => s.seatNumber),
+      price: totalPrice,
+      eventDate: event.startDate
+        ? new Date(event.startDate).toISOString() 
+        : null,
+      venueName: event.venue?.name || "",
+      eventName: event.name
+    })
+
+    });
+        console.log(resp);  
+        console.log("Seats confirmedfgdkhgjfgerlsdkufzch");
+        const ticketData = await resp.json(); 
+        console.log("Ticket created:", ticketData);
+
+    
+
+
+
+    // Navigate to success page
+    navigate(`/events/${event.id}/success`, {
+      state: { event, selectedSeats, totalPrice, ticketData },
+    });
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  }
+}
+
+  } catch (err) {
+    setError(err.message);
+  }
+
+  setLoading(false);
+};
+
 
   return (
     <motion.form
@@ -72,24 +149,6 @@ const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
         <CreditCard size={24} /> Payment Details
       </h2>
 
-      {/* Event Summary */}
-      {/* <div className="p-4 bg-gray-50 rounded-lg shadow-sm space-y-2">
-        <p><strong>Event:</strong> {event.name}</p>
-        <p><strong>Venue:</strong> {event.venue?.name || "N/A"}</p>
-        <p><strong>City:</strong> {event.venue?.city || "N/A"}</p>
-        <p><strong>Date:</strong> {new Date(event.startDate).toLocaleString()}</p>
-        <div>
-          <strong>Seats:</strong>
-          <ul className="list-disc list-inside">
-            {selectedSeats?.map((seat, index) => (
-              <li key={index}>
-                {seat.seatNumber} – {seat.seatType} (Rs.{seat.price})
-              </li>
-            )) || <li>No seats selected</li>}
-          </ul>
-        </div>
-        <p className="text-lg font-semibold text-blue-600">Total: Rs.{totalPrice}</p>
-      </div> */}
 
       {/* Card Input */}
       <div className="p-4 border rounded-lg bg-white shadow-sm">
@@ -172,17 +231,7 @@ const Payment = () => {
           </div>
           <p className="text-xl font-semibold text-blue-600">Total: Rs.{totalPrice}</p>
 
-          {/* Skip Payment Button */}
-          <button
-            onClick={() =>
-              navigate(`/events/${event.id}/success`, {
-                state: { event, selectedSeats, totalPrice },
-              })
-            }
-            className="mt-4 w-full py-3 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition"
-          >
-            Skip Payment (Go to Success Page)
-          </button>
+          
         </motion.div>
 
         {/* Right: Payment Form */}
