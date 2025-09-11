@@ -17,7 +17,7 @@ const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { paymentServiceURL,seatingServiceURL ,token } = useContext(AppContext);
+  const { paymentServiceURL,seatingServiceURL , ticketServiceURL,token , userID} = useContext(AppContext);
   const eventId = event?.id;
   const handleSubmit = async (e) => {
   e.preventDefault();
@@ -27,7 +27,6 @@ const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
   try {
     console.log("token:", token);
 
-    // ✅ Send request to backend
     const res = await fetch(`${paymentServiceURL}`, {
       method: "POST",
       headers: {
@@ -35,15 +34,13 @@ const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        userId: 1, // TODO: replace with actual logged-in user ID
-        ticketId: selectedSeats[0]?.id,
-        amount: totalPrice,  // ✅ send whole units (backend multiplies if needed)
-        currency: "USD",     // ⚠️ change to USD/EUR for test mode (LKR not supported)
+        userId: userID, 
+        amount: totalPrice, 
+        currency: "USD",    
         paymentMethod: "card",
       }),
     });
 
-    // ✅ Handle text response safely
     const text = await res.text();
     let data;
     try {
@@ -61,7 +58,6 @@ const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
       return;
     }
 
-    // ✅ Confirm card payment with Stripe
     const result = await stripe.confirmCardPayment(clientSecret, {
       payment_method: {
         card: elements.getElement(CardElement),
@@ -91,12 +87,40 @@ const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
       return;
     }
 
-    // const data = await res.json();
     console.log("Seats confirmed:");
+
+
+    const resp = await fetch(`${ticketServiceURL}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+     body: JSON.stringify({
+      eventId: event.id,
+      userId: userID,         
+      seatNumbers: selectedSeats.map(s => s.seatNumber),
+      price: totalPrice,
+      eventDate: event.startDate
+        ? new Date(event.startDate).toISOString() 
+        : null,
+      venueName: event.venue?.name || "",
+      eventName: event.name
+    })
+
+    });
+        console.log(resp);  
+        console.log("Seats confirmedfgdkhgjfgerlsdkufzch");
+        const ticketData = await resp.json(); 
+        console.log("Ticket created:", ticketData);
+
+    
+
+
 
     // Navigate to success page
     navigate(`/events/${event.id}/success`, {
-      state: { event, selectedSeats, totalPrice },
+      state: { event, selectedSeats, totalPrice, ticketData },
     });
   } catch (err) {
     console.error(err);
@@ -204,17 +228,7 @@ const Payment = () => {
           </div>
           <p className="text-xl font-semibold text-blue-600">Total: Rs.{totalPrice}</p>
 
-          {/* Skip Payment Button */}
-          <button
-            onClick={() =>
-              navigate(`/events/${event.id}/success`, {
-                state: { event, selectedSeats, totalPrice },
-              })
-            }
-            className="mt-4 w-full py-3 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition"
-          >
-            Skip Payment (Go to Success Page)
-          </button>
+          
         </motion.div>
 
         {/* Right: Payment Form */}
