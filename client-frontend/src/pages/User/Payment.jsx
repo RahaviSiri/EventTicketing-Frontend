@@ -5,6 +5,7 @@ import { Elements, CardElement, useStripe, useElements } from "@stripe/react-str
 import { motion } from "framer-motion";
 import { CreditCard, CheckCircle } from "lucide-react";
 import { AppContext } from "../../context/AppContext";
+import colors from "../../constants/colors";
 
 const stripePromise = loadStripe(
   "pk_test_51RlZTHHtjMJALymh2E5t3Gnn5C2ViS2jSIL1Nuop16zrmddAfaM41kWxv93ItFg2JSSc2TCG8u8jRLsb3osHwwuj00g9AnZ04g"
@@ -175,9 +176,11 @@ const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
       <button
         type="submit"
         disabled={!stripe || loading}
-        className={`w-full py-3 rounded-lg font-semibold text-white shadow transition-colors ${
-          loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
-        }`}
+        style={{
+          backgroundColor: loading ? 'bg-gray-400' : colors.primary,
+          cursor: loading ? 'not-allowed' : 'pointer',
+        }}
+        className={`w-full py-3 rounded-lg font-semibold text-white shadow transition-colors`}
       >
         {loading ? "Processing..." : `Pay Rs.${totalPrice}`}
       </button>

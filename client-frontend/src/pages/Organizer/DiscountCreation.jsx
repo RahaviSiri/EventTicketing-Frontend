@@ -4,6 +4,7 @@ import colors from "../../constants/colors";
 import { AppContext } from "../../context/AppContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FaStar } from "react-icons/fa";
+import { HeaderContext } from "../../context/HeaderContext";
 
 
 const DiscountCreation = () => {
@@ -22,7 +23,8 @@ const DiscountCreation = () => {
   // event.id will give you eventId
   const eventId = event?.id;
 
-  const { discountServiceURL, token } = useContext(AppContext);
+  // const { token } = useContext(AppContext);
+  const { api } = useContext(HeaderContext);
   const [message, setMessage] = useState("");
   const canvasRef = useRef(null);
   const [imageURL, setImageURL] = useState("");
@@ -88,12 +90,9 @@ const DiscountCreation = () => {
     formData.append("image", blob, `${discountData.code}.png`);
 
     try {
-      const res = await axios.post(
-        `${discountServiceURL}/event/${eventId}/file`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}` } }
-      );
-      setMessage(`Discount created! Code: ${res.data.code}`);
+      const res = await api.createDiscountWithFile(eventId, formData);
+      const data = await res.json();
+      setMessage(`Discount created! Code: ${data.code}`);
       setDiscountData({
         code: "",
         description: "",

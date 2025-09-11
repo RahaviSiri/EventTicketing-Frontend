@@ -13,58 +13,33 @@ import {
   IconButton,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-// import { useNavigate } from "react-router-dom";
+import colors from "../../constants/colors"
+import { HeaderContext } from "../../context/HeaderContext";
 
 const DiscountList = () => {
-  const { eventServiceURL, discountServiceURL, token, userID } = useContext(AppContext);
+  const { userID } = useContext(AppContext);
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState("");
   const [discounts, setDiscounts] = useState([]);
-  // const navigate = useNavigate();
+  const { api } = useContext(HeaderContext);
 
   // Fetch events for the organizer
   useEffect(() => {
     if (!userID) return;
-    const fetchEvents = async () => {
-      try {
-        const res = await fetch(`${eventServiceURL}/organizer/${userID}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        setEvents(data);
-      } catch (err) {
-        console.error("Error fetching events:", err);
-      }
-    };
-    fetchEvents();
-  }, [userID, eventServiceURL, token]);
+    api.getEventsByOrganizer(userID).then(setEvents).catch(console.error);
+  }, [userID, api]);
 
   // Fetch discounts for selected event
   useEffect(() => {
     if (!selectedEvent) return;
-    const fetchDiscounts = async () => {
-      try {
-        const res = await fetch(`${discountServiceURL}/event/${selectedEvent}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        setDiscounts(data);
-      } catch (err) {
-        console.error("Error fetching discounts:", err);
-      }
-    };
-    fetchDiscounts();
-  }, [selectedEvent, discountServiceURL, token]);
+    api.getDiscountsByEvent(selectedEvent).then(setDiscounts).catch(console.error);
+  }, [selectedEvent, api]);
 
   // Delete discount
   const handleDelete = async (id) => {
     try {
-      await fetch(`${discountServiceURL}/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setDiscounts(discounts.filter((d) => d.id !== id));
-    //   navigate("/organizers/discountsLists");
+      await api.deleteDiscount(id);
+      setDiscounts((prev) => prev.filter((d) => d.id !== id));
     } catch (err) {
       console.error("Error deleting discount:", err);
     }
@@ -72,12 +47,30 @@ const DiscountList = () => {
 
   return (
     <div className="p-4">
+      {/* Heading & Subheading */}
+      <h1 style={{ color: colors.primary }} className="text-2xl font-bold mb-1">Discounts Management</h1>
+      <p className="text-gray-600 mb-4">
+        Select an event to view and manage its discount codes.
+      </p>
       <FormControl fullWidth sx={{ mb: 4 }}>
-        <InputLabel id="event-select-label">Select Event</InputLabel>
+        <InputLabel sx={{
+          color: "gray", // default
+          "&.Mui-focused": {
+            color: colors.primary, // label color when focused
+          },
+        }} id="event-select-label">Select Event</InputLabel>
         <Select
           labelId="event-select-label"
           value={selectedEvent}
           onChange={(e) => setSelectedEvent(e.target.value)}
+          sx={{
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: colors.primary,
+            },
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: colors.primary,
+            },
+          }}
         >
           {events.map((evt) => (
             <MenuItem key={evt.event.id} value={evt.event.id}>
@@ -96,7 +89,6 @@ const DiscountList = () => {
               <Card sx={{ backgroundColor: "#f5f5f5", position: "relative" }}>
                 <CardMedia
                   component="img"
-                  height="140"
                   image={d.imageURL || "https://via.placeholder.com/300x140?text=No+Image"}
                   alt={d.code}
                 />

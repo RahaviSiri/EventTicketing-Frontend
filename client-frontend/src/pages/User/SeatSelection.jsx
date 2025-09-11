@@ -216,7 +216,7 @@ const handleBooking = async () => {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-full bg-blue-600"></div>
+            <div style={{backgroundColor : colors.primary}} className="w-5 h-5 rounded-full"></div>
             <span className="text-gray-700">Normal: Rs.{normalPrice}</span>
           </div>
           <div className="flex items-center gap-2">
@@ -266,7 +266,8 @@ const handleBooking = async () => {
 
         <button
           onClick={handleBooking}
-          className="w-full bg-blue-600 text-white px-5 py-3 rounded-xl shadow hover:bg-blue-700 transition-all duration-200 mt-6"
+          style={{backgroundColor : colors.primary}}
+          className="w-full text-white px-5 py-3 rounded-xl shadow  transition-all duration-200 mt-6"
         >
           Confirm Booking ({selectedSeats.length})
         </button>

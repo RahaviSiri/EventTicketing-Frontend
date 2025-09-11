@@ -14,30 +14,23 @@ import MenuItem from '@mui/material/MenuItem';
 import ViewEventHeader from '../../components/OrganizerComponents/ViewEventHeader';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../../context/AppContext';
+import { HeaderContext } from '../../context/HeaderContext';
 
 const EventsList = () => {
     const [events, setEvents] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
     const [anchorEl, setAnchorEl] = useState(null);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const navigate = useNavigate();
-    const { eventServiceURL, userID, token } = useContext(AppContext);
+    const { userID } = useContext(AppContext);
+    const { api } = useContext(HeaderContext);
 
     useEffect(() => {
         const fetchEvents = async () => {
             if (!userID) return; // wait until userID is available
             const id = parseInt(userID, 10);
             try {
-                const res = await fetch(`${eventServiceURL}/organizer/${id}`, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`
-                    },
-                });
-
-                if (!res.ok) throw new Error("Failed to fetch events");
-
-                const data = await res.json();
+                const data = await api.getEventsByOrganizer(id);
                 setEvents(data);
                 console.log("Fetched events:", data);
             } catch (error) {
@@ -47,7 +40,15 @@ const EventsList = () => {
         fetchEvents();
         console.log("UserID in EventsList:", userID);
         console.log(events);
-    }, [token, userID]);
+    }, [api ,userID]);
+
+    // Filter events by search
+    const filteredEvents = events.filter((e) => {
+        const title = e.event?.name || '';
+        const location = e.event?.location || '';
+        return title.toLowerCase().includes(searchTerm.toLowerCase()) || // In JavaScript, any string includes the empty string.
+               location.toLowerCase().includes(searchTerm.toLowerCase());
+    });
 
     const handleCardClick = (event) => {
         navigate(`/organizers/eventDetails`, { state: { event } });
@@ -71,13 +72,7 @@ const EventsList = () => {
     };
 
     const handleDelete = () => {
-        fetch(`${eventServiceURL}/${selectedEvent.id}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`
-            },
-        })
+        api.deleteEvent(selectedEvent.id)
             .then(() => {
                 setEvents(events.filter(e => e.event.id !== selectedEvent.id));
                 handleMenuClose()
@@ -87,9 +82,9 @@ const EventsList = () => {
 
     return (
         <div className="flex flex-col">
-            <ViewEventHeader />
+            <ViewEventHeader searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6 px-4">
-                {events.map((event) => (
+                {filteredEvents.map((event) => (
                     <Card
                         key={event.event.id}
                         sx={{ maxWidth: 350, backgroundColor: '#faf8f5', cursor: 'pointer' }}

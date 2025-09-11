@@ -3,11 +3,13 @@ import Konva from "konva";
 import { useLocation, useNavigate } from "react-router-dom";
 import colors from "../../constants/colors";
 import { AppContext } from "../../context/AppContext";
+import { HeaderContext } from "../../context/HeaderContext"
 
 const SeatDesignLayout = ({ onSave }) => {
   const containerRef = useRef();
   const location = useLocation();
-  const { eventServiceURL, token, seatingServiceURL } = useContext(AppContext);
+  const { token } = useContext(AppContext);
+  const { api } = useContext(HeaderContext); 
 
   const event = location.state?.event;
   const capacity = event?.venue?.capacity || 0;
@@ -114,11 +116,7 @@ const SeatDesignLayout = ({ onSave }) => {
   useEffect(() => {
     const fetchLayout = async () => {
       try {
-        const res = await fetch(`${seatingServiceURL}/event/${eventId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error("Failed to fetch layout");
-        const data = await res.json();
+        const data = await api.getSeatingByEvent(eventId); 
         const existingSeats = data.layoutJson ? JSON.parse(data.layoutJson).seats : [];
 
         if (existingSeats.length > 0) {
@@ -171,7 +169,7 @@ const SeatDesignLayout = ({ onSave }) => {
     };
 
     fetchLayout();
-  }, [capacity, seatingServiceURL, eventId, token]);
+  }, [capacity, api, eventId, token]);
 
   // --- Update seats when VIP/Regular price or count changes ---
   useEffect(() => {
@@ -197,11 +195,7 @@ const SeatDesignLayout = ({ onSave }) => {
     if (onSave) onSave(json, eventId);
 
     try {
-      await fetch(`${eventServiceURL}/${eventId}/saveLayout`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ eventId, layoutJson: json }),
-      });
+      await api.saveSeatingLayout(eventId, json); 
       alert("Layout saved successfully!");
       navigate("/organizers/viewEvent");
     } catch (err) {

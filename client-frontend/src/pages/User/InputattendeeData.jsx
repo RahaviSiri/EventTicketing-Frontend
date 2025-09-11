@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import colors from '../../constants/colors';
 
 const InputattendeeData = () => {
   const { eventId } = useParams();
@@ -17,7 +18,7 @@ const InputattendeeData = () => {
       <h2 className="text-xl font-bold mb-4">Attendee Information</h2>
       <input type="text" placeholder="Name" required className="w-full mb-3 p-2 border" value={attendee.name} onChange={e => setAttendee({ ...attendee, name: e.target.value })} />
       <input type="email" placeholder="Email" required className="w-full mb-3 p-2 border" value={attendee.email} onChange={e => setAttendee({ ...attendee, email: e.target.value })} />
-      <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded">Next: Select Seat</button>
+      <button style={{style : colors.primary}} type="submit" className="text-white px-4 py-2 rounded">Next: Select Seat</button>
     </form>
   );
 };
