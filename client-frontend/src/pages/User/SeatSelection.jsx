@@ -35,7 +35,7 @@ const SeatSelection = () => {
     });
     stageRef.current = stage;
 
-    const layer = new Konva.Layer();
+    const layer = new Konva.Layer({ listening: true });
     stage.add(layer);
     layerRef.current = layer;
 
@@ -54,6 +54,7 @@ const SeatSelection = () => {
         : seatInfo.seatType === "VIP"
         ? "#FFD700"
         : colors.primary;
+    // console.log('colors.primary =', colors.primary);
 
     const seat = new Konva.Circle({
       x: seatInfo.x,
@@ -72,12 +73,14 @@ const SeatSelection = () => {
       fontSize: 12,
       fontFamily: "Arial",
       fill: "black",
+      listening: false, // Edited
     });
 
     layerRef.current.add(seat);
     layerRef.current.add(seatText);
 
-    seat.on("click", () => {
+    seat.on("click tap", () => {
+      console.log("Seat clicked ", seatInfo.seatNumber);
       if (seatInfo.status === "booked" ) return;
 
       setSelectedSeats((prev) => {
@@ -116,17 +119,21 @@ const SeatSelection = () => {
 
         const data = await res.json();
         const seats = data.layoutJson ? JSON.parse(data.layoutJson).seats : [];
+        console.log(  "Seats from Seat Selection Page " ,seats);
         seatsDataRef.current = seats;
 
         const vipSeats = seats.filter((s) => s.seatType === "VIP");
+        console.log("VIP Seats ", vipSeats);
         const normalSeats = seats.filter(
           (s) => s.seatType !== "VIP" && s.status !== "booked"
         );
+        console.log("Normal Seats ", normalSeats);
         if (vipSeats.length > 0) setVipPrice(vipSeats[0].price);
         if (normalSeats.length > 0) setNormalPrice(normalSeats[0].price);
 
         seats.forEach(renderSeat);
-        layerRef.current.draw();
+        layerRef.current.batchDraw(); // Edited
+        // layerRef.current.draw();
       } catch (err) {
         console.error(err);
       }
@@ -134,8 +141,11 @@ const SeatSelection = () => {
 
     fetchLayout();
   }, [eventId, token]);
+  console.log("VIP Seats Price ", vipPrice);
+  console.log("Normal Seats Price ", normalPrice);
 
   const totalPrice = selectedSeats.reduce((total, seat) => total + seat.price, 0);
+  console.log("Selected Seats ", selectedSeats);
 
   // --- Handle Booking ---
 const handleBooking = async () => {
@@ -145,6 +155,7 @@ const handleBooking = async () => {
   }
 
   const seatNumbers = selectedSeats.map((s) => s.seatNumber);
+  console.log("Seat Numbers for Booking " , seatNumbers);
 
   try {
     const res = await fetch(`${seatingServiceURL}/${eventId}/reserve`, {
