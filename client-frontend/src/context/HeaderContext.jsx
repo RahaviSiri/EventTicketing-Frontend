@@ -121,6 +121,7 @@ export const HeaderProvider = ({ children }) => {
     },
     // ---------------- Orders ----------------
     getOrdersByEvent: async (eventId) => {
+      console.log(eventId, orderServiceURL);
       const res = await fetch(`${orderServiceURL}/event/${eventId}`, {
         headers: getHeaders(false),
       });

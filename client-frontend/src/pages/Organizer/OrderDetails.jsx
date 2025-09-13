@@ -29,8 +29,10 @@ const OrderDetails = () => {
 
   const fetchOrders = async (eventID) => {
     if (!eventID) return;
+    console.log(eventID);
     try {
       const res = await api.getOrdersByEvent(eventID);
+      console.log("Response: ", res);
       if (Array.isArray(res)) {
         setOrders(res);
       } else {
@@ -106,7 +108,7 @@ const OrderDetails = () => {
               <th className="p-3">Order ID</th>
               <th className="p-3">Attendee</th>
               <th className="p-3">Email</th>
-              <th className="p-3">Ticket</th>
+              <th className="p-3">Ticket ID</th>
               <th className="p-3">Price</th>
               <th className="p-3">Status</th>
               <th className="p-3">Date</th>
@@ -117,9 +119,9 @@ const OrderDetails = () => {
             {orders.map((order) => (
               <tr key={order.id} className="border-b">
                 <td className="p-3">{order.id}</td>
-                <td className="p-3">{order.attendee}</td>
-                <td className="p-3">{order.email}</td>
-                <td className="p-3">{order.ticket}</td>
+                <td className="p-3">{order.attendeeName}</td>
+                <td className="p-3">{order.attendeeEmail}</td>
+                <td className="p-3">{order.ticketId}</td>
                 <td className="p-3">{order.price}</td>
                 <td
                   className={`p-3 font-semibold ${order.status === "Paid" ? "text-green-600" : "text-yellow-600"
@@ -127,7 +129,16 @@ const OrderDetails = () => {
                 >
                   {order.status}
                 </td>
-                <td className="p-3">{order.date}</td>
+                <td className="p-3">
+                  {new Intl.DateTimeFormat("en-GB", {
+                    year: "numeric",
+                    month: "short",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }).format(new Date(order.createdAt))}
+                </td>
+
                 <td className="p-3">
                   {order.checkIn ? (
                     <span className="text-green-600">✅ Checked-In</span>
