@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import colors from "../../constants/colors";
 import { AppContext } from "../../context/AppContext";
-import Charts from './Charts';
+import Charts from "./Charts";
 import Graphs from "./Graphs";
 import { HeaderContext } from "../../context/HeaderContext";
 
@@ -9,6 +9,8 @@ const Dashboard = () => {
   const { userID } = useContext(AppContext);
   const [events, setEvents] = useState([]);
   const { api } = useContext(HeaderContext);
+  const [revenue, setRevenue] = useState(0);
+  const [ ticketCount, setTicketCount ] = useState(0);
 
   const fetchEvents = async () => {
     if (!userID) return; // wait until userID is available
@@ -28,13 +30,46 @@ const Dashboard = () => {
     }
   };
 
+  const fetchRevenue = async () => {
+    if (events.length === 0) return;
+
+    const ids = events.map((item) => item.event.id);
+    try {
+      const total = await api.getRevenueByEventIds(ids);
+      setRevenue(total);
+    } catch (error) {
+      console.error("Error fetching revenue by event IDs:", error);
+    }
+  };
+
+  const fetchTicketCount = async () => {
+    if (events.length === 0) return;
+
+    const ids = events.map((item) => item.event.id);
+    try {
+      const count = await api.getEventsCountByEventIds(ids);
+      setTicketCount(count);
+    } catch (error) {
+      console.error("Error fetching revenue by event IDs:", error);
+    }
+  };
+
   useEffect(() => {
     fetchEvents();
   }, [userID, api]);
 
+  useEffect(() => {
+  if (events.length > 0) {
+    fetchRevenue();
+    fetchTicketCount();
+  }
+}, [events]);
+
   // Earliest event for top card
-  const upcomingEvents = events.filter((item) => new Date(item.event.endDate) >= new Date());
-  const earliestEvent = upcomingEvents.length > 0 ? upcomingEvents[0] : null; 
+  const upcomingEvents = events.filter(
+    (item) => new Date(item.event.endDate) >= new Date()
+  );
+  const earliestEvent = upcomingEvents.length > 0 ? upcomingEvents[0] : null;
 
   return (
     <div className="p-6 space-y-6">
@@ -45,7 +80,8 @@ const Dashboard = () => {
       >
         <h1 className="text-2xl font-bold">Welcome, Organizer 🎉</h1>
         <p className="mt-2 text-base">
-          Manage your events, track bookings, and send reminders — all in one place.
+          Manage your events, track bookings, and send reminders — all in one
+          place.
         </p>
       </div>
 
@@ -60,13 +96,13 @@ const Dashboard = () => {
         <div className="bg-white rounded-2xl shadow p-4 text-center">
           <h3 className="text-lg font-semibold">Tickets Sold</h3>
           <p className="text-xl font-bold" style={{ color: colors.primary }}>
-            {0}
+            {ticketCount}
           </p>
         </div>
         <div className="bg-white rounded-2xl shadow p-4 text-center">
           <h3 className="text-lg font-semibold">Revenue</h3>
           <p className="text-xl font-bold" style={{ color: colors.primary }}>
-            LKR 0
+            Rs {revenue}
           </p>
         </div>
         <div className="bg-white rounded-2xl shadow p-4 text-center">
@@ -82,7 +118,7 @@ const Dashboard = () => {
         <div className="bg-white rounded-2xl shadow p-6">
           <h3 className="text-lg font-semibold mb-4">📊 Sales Chart</h3>
           <div className="grid grid-cols-1 gap-6">
-             <Charts events={events} />
+            <Charts events={events} />
           </div>
         </div>
         <div className="bg-white rounded-2xl shadow p-6">
