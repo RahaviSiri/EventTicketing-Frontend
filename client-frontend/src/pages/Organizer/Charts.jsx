@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   LineChart,
   Line,
@@ -8,10 +8,42 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import colors from "../../constants/colors"
+import colors from "../../constants/colors";
+import { HeaderContext } from "../../context/HeaderContext";
+import { AppContext } from "../../context/AppContext";
 
-const Charts = ({ events }) => {
-  // Prepare data for Sales Chart
+const Charts = () => {
+  const { api } = useContext(HeaderContext);
+  const [events, setEvents] = useState([]);
+  const { userID } = useContext(AppContext);
+
+  // Fetch events and tickets sold
+  const fetchEventsWithTickets = async () => {
+    if (!userID) return;
+
+    try {
+      // 1. fetch organizer's events
+      const rawEvents = await api.getEventsByOrganizer(userID);
+
+      // 2. fetch tickets sold for each event
+      const enriched = await Promise.all(
+        rawEvents.map(async (item) => {
+          const ticketsSold = await api.countTicketsByEvent(item.event.id);
+          return { ...item, ticketsSold }; // add ticketsSold field
+        })
+      );
+
+      setEvents(enriched);
+    } catch (err) {
+      console.error("Error fetching events with tickets:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchEventsWithTickets();
+  }, [userID, api]);
+
+  // Prepare data for chart
   const salesData = events.map((item) => ({
     name: item.event.name,
     ticketsSold: item.ticketsSold || 0,
@@ -19,7 +51,6 @@ const Charts = ({ events }) => {
 
   return (
     <div className="w-full">
-      {/* Tickets Sold Chart */}
       <div className="">
         <h3 className="text-xl font-semibold mb-4 text-gray-800 flex items-center gap-2">
           🎟️ Tickets Sold
@@ -45,11 +76,7 @@ const Charts = ({ events }) => {
                   value: "Tickets Sold",
                   angle: -90,
                   position: "insideLeft",
-                  style: {
-                    textAnchor: "middle",
-                    fill: "#374151",
-                    fontSize: 13,
-                  },
+                  style: { textAnchor: "middle", fill: "#374151", fontSize: 13 },
                 }}
               />
               <Tooltip
@@ -59,15 +86,10 @@ const Charts = ({ events }) => {
               <Line
                 type="monotone"
                 dataKey="ticketsSold"
-                stroke= {colors.primary}
+                stroke={colors.primary}
                 strokeWidth={3}
-                dot={{ r: 5, fill: colors.primary}}
-                activeDot={{
-                  r: 7,
-                  fill: colors.primary,
-                  stroke: "#fff",
-                  strokeWidth: 2,
-                }}
+                dot={{ r: 5, fill: colors.primary }}
+                activeDot={{ r: 7, fill: colors.primary, stroke: "#fff", strokeWidth: 2 }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -75,7 +97,6 @@ const Charts = ({ events }) => {
       </div>
     </div>
   );
-
 };
 
 export default Charts;

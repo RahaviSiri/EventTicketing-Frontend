@@ -12,6 +12,7 @@ export const HeaderProvider = ({ children }) => {
     discountServiceURL,
     paymentServiceURL,
     orderServiceURL,
+    ticketServiceURL,
     userID,
     token,
   } = useContext(AppContext);
@@ -133,12 +134,40 @@ export const HeaderProvider = ({ children }) => {
       });
       return res.json();
     },
-    
+
+    // ---------------- Tickets ----------------
+    getRevenueByEventIds: async (ids) => {
+      const res = await fetch(`${ticketServiceURL}/getRevenueByEvents`, {
+        method: "POST",
+        headers: getHeaders(true), // JSON headers
+        body: JSON.stringify(ids), // send raw array: [1,2,3]
+      });
+      return res.json();
+    },
+
+    getEventsCountByEventIds: async (ids) => {
+      const res = await fetch(`${ticketServiceURL}/getTicketsByEvents`, {
+        method: "POST",
+        headers: getHeaders(true),
+        body: JSON.stringify(ids),
+      });
+      return res.json();
+    },
+    getRevenueByEvent: async (eventId) => {
+      const res = await fetch(`${ticketServiceURL}/revenue/event/${eventId}`, {
+        headers: getHeaders(false),
+      });
+      return res.json();
+    },
+    countTicketsByEvent: async (eventId) => {
+      const res = await fetch(`${ticketServiceURL}/count/${eventId}`, {
+        headers: getHeaders(false),
+      });
+      return res.json();
+    },
   };
 
   return (
-    <HeaderContext.Provider value={{ api }}>
-      {children}
-    </HeaderContext.Provider>
+    <HeaderContext.Provider value={{ api }}>{children}</HeaderContext.Provider>
   );
 };
