@@ -13,6 +13,7 @@ import Contact from "../pages/User/Contact.jsx";
 import About from "../pages/User/About.jsx";
 import Slider_1 from "../components/UserComponents/Slider_1.jsx";
 import Slider_2 from "../components/UserComponents/Slider_2.jsx";
+import Footer from "../components/UserComponents/Footer.jsx";
 
 const AttendeeLayout = () => {
   const location = useLocation();
@@ -21,13 +22,13 @@ const AttendeeLayout = () => {
   const hideNavBarRoutes = ["/", "/slider_2", "/login"];
 
   // Routes where padding should be removed
-  const noPaddingRoutes = ["/", "/slider_2", "/login"];
+  const noPaddingRoutes = ["/", "/slider_2", "/login", "/contact"];
 
   const shouldShowNavBar = !hideNavBarRoutes.includes(location.pathname);
   const shouldHavePadding = !noPaddingRoutes.includes(location.pathname);
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col ">
       {shouldShowNavBar && <NavBar />}
       <main className={`flex-1 overflow-y-auto ${shouldHavePadding ? "p-4" : ""}`}>
         <Routes>
@@ -45,6 +46,7 @@ const AttendeeLayout = () => {
           <Route path="/login" element={<Login />} />
         </Routes>
       </main>
+      <Footer/>
     </div>
   );
 };

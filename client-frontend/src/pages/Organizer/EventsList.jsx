@@ -15,9 +15,13 @@ import ViewEventHeader from '../../components/OrganizerComponents/ViewEventHeade
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../../context/AppContext';
 import { HeaderContext } from '../../context/HeaderContext';
+import colors from '../../constants/colors';
 
 const EventsList = () => {
     const [events, setEvents] = useState([]);
+    const [page, setPage] = useState(0);
+    const [size, setSize] = useState(6);
+    const [totalPages, setTotalPages] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
     const [anchorEl, setAnchorEl] = useState(null);
     const [selectedEvent, setSelectedEvent] = useState(null);
@@ -30,8 +34,9 @@ const EventsList = () => {
             if (!userID) return; // wait until userID is available
             const id = parseInt(userID, 10);
             try {
-                const data = await api.getEventsByOrganizer(id);
-                setEvents(data);
+                const data = await api.getEventsByOrganizerForPage(id, page, size);
+                setEvents(data.content);         // content = actual events
+                setTotalPages(data.totalPages);  // track total pages
                 console.log("Fetched events:", data);
             } catch (error) {
                 console.error("Error fetching events:", error);
@@ -40,14 +45,14 @@ const EventsList = () => {
         fetchEvents();
         console.log("UserID in EventsList:", userID);
         console.log(events);
-    }, [api ,userID]);
+    }, [api, userID, page, size]);
 
     // Filter events by search
     const filteredEvents = events.filter((e) => {
         const title = e.event?.name || '';
         const location = e.event?.location || '';
         return title.toLowerCase().includes(searchTerm.toLowerCase()) || // In JavaScript, any string includes the empty string.
-               location.toLowerCase().includes(searchTerm.toLowerCase());
+            location.toLowerCase().includes(searchTerm.toLowerCase());
     });
 
     const handleCardClick = (event) => {
@@ -163,6 +168,28 @@ const EventsList = () => {
                     </Card>
                 ))}
             </div>
+            <div className="flex justify-center items-center mt-6 gap-4">
+                <button
+                    disabled={page === 0}
+                    onClick={() => setPage(page - 1)}
+                    style={{backgroundColor : colors.primary}}
+                    className="px-4 py-2 rounded text-white disabled:opacity-50"
+                >
+                    Prev
+                </button>
+                <span>
+                    Page {page + 1} of {totalPages}
+                </span>
+                <button
+                    disabled={page + 1 >= totalPages}
+                    onClick={() => setPage(page + 1)}
+                    style={{backgroundColor : colors.primary}}
+                    className="px-4 py-2 rounded text-white disabled:opacity-50"
+                >
+                    Next
+                </button>
+            </div>
+
         </div>
     );
 };

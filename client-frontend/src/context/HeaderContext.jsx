@@ -29,8 +29,20 @@ export const HeaderProvider = ({ children }) => {
   // ✅ API methods grouped by service
   const api = {
     // ---------------- EVENTS ----------------
+    getAllEvents: async (page = 0, size = 10) => {
+      const res = await fetch(`${eventServiceURL}/paged?page=${page}&size=${size}`, {
+        headers: getHeaders(false),
+      });
+      return res.json();
+    },
     getEventsByOrganizer: async (id) => {
       const res = await fetch(`${eventServiceURL}/organizer/${id}`, {
+        headers: getHeaders(false),
+      });
+      return res.json();
+    },
+    getEventsByOrganizerForPage: async (id, page = 0, size = 10) => {
+      const res = await fetch(`${eventServiceURL}/organizer/${id}/paged?page=${page}&size=${size}`, {
         headers: getHeaders(false),
       });
       return res.json();
@@ -121,12 +133,11 @@ export const HeaderProvider = ({ children }) => {
       });
     },
     // ---------------- Orders ----------------
-    getOrdersByEvent: async (eventId) => {
-      console.log(eventId, orderServiceURL);
-      const res = await fetch(`${orderServiceURL}/event/${eventId}`, {
+    getOrdersByEvent: async (eventId, page = 0, size = 10) => {
+      const res = await fetch(`${orderServiceURL}/event/${eventId}?page=${page}&size=${size}`, {
         headers: getHeaders(false),
       });
-      return res.json();
+      return res.json(); // will return a Page object
     },
     getOrdersByUser: async (userId) => {
       const res = await fetch(`${orderServiceURL}/user/${userId}`, {
