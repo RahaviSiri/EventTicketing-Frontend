@@ -8,8 +8,8 @@ import colors from "../../constants/colors";
 const EventDetail = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
-const [vipPrice, setVipPrice] = useState(0);
-const [normalPrice, setNormalPrice] = useState(0);
+  const [vipPrice, setVipPrice] = useState(0);
+  const [normalPrice, setNormalPrice] = useState(0);
   const [event, setEvent] = useState(null);
   const [seatLayout, setSeatLayout] = useState(null);
   const [loadingEvent, setLoadingEvent] = useState(true);
@@ -26,7 +26,8 @@ const [normalPrice, setNormalPrice] = useState(0);
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (!response.ok) throw new Error(`Failed to fetch event: ${response.status}`);
+        if (!response.ok)
+          throw new Error(`Failed to fetch event: ${response.status}`);
         const data = await response.json();
         setEvent(data);
       } catch (err) {
@@ -40,40 +41,41 @@ const [normalPrice, setNormalPrice] = useState(0);
   }, [eventId]);
 
   useEffect(() => {
-  const fetchSeatLayout = async () => {
-    if (!event?.seatingChartId) return;
+    const fetchSeatLayout = async () => {
+      if (!event?.seatingChartId) return;
 
-    try {
-      const token = localStorage.getItem("EventToken");
-      const response = await fetch(
-        `${seatingServiceURL}/${event.seatingChartId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      try {
+        const token = localStorage.getItem("EventToken");
+        const response = await fetch(
+          `${seatingServiceURL}/${event.seatingChartId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-      if (!response.ok) throw new Error("Failed to fetch seating layout");
-      const data = await response.json();
+        if (!response.ok) throw new Error("Failed to fetch seating layout");
+        const data = await response.json();
 
-      const layout = JSON.parse(data.layoutJson); // assuming your API returns { layoutJson: '...' }
-      setSeatLayout(layout);
+        const layout = JSON.parse(data.layoutJson); // assuming your API returns { layoutJson: '...' }
+        setSeatLayout(layout);
 
-      // Extract prices from seats
-      const seats = layout.seats || [];
+        // Extract prices from seats
+        const seats = layout.seats || [];
 
-      const vipSeats = seats.filter((s) => s.seatType === "VIP");
-      const normalSeats = seats.filter((s) => s.seatType !== "VIP" && s.status !== "booked");
+        const vipSeats = seats.filter((s) => s.seatType === "VIP");
+        const normalSeats = seats.filter(
+          (s) => s.seatType !== "VIP" && s.status !== "booked"
+        );
 
-      if (vipSeats.length > 0) setVipPrice(vipSeats[0].price);
-      if (normalSeats.length > 0) setNormalPrice(normalSeats[0].price);
+        if (vipSeats.length > 0) setVipPrice(vipSeats[0].price);
+        if (normalSeats.length > 0) setNormalPrice(normalSeats[0].price);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingSeats(false);
+      }
+    };
 
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingSeats(false);
-    }
-  };
-
-  fetchSeatLayout();
-}, [event]);
+    fetchSeatLayout();
+  }, [event]);
   const handleBookNow = () => {
     navigate(`/events/${eventId}/seats`, { state: { event } });
   };
@@ -145,7 +147,9 @@ const [normalPrice, setNormalPrice] = useState(0);
         {/* Event Info */}
         <div className="lg:col-span-2 space-y-10">
           <div className="bg-white rounded-2xl shadow-md p-8 hover:shadow-lg transition">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">About This Event</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              About This Event
+            </h2>
             <p className="text-gray-700 leading-relaxed">{event.description}</p>
 
             {event.features?.length > 0 && (
@@ -167,37 +171,64 @@ const [normalPrice, setNormalPrice] = useState(0);
 
           {/* Details */}
           <div className="bg-white rounded-2xl shadow-md p-8 hover:shadow-lg transition">
-            <h3 className="text-xl font-semibold text-gray-900 mb-6">Event Details</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-6">
+              Event Details
+            </h3>
             <div className="grid md:grid-cols-2 gap-6">
               <DetailCard
-                icon={<Calendar style={{color : colors.accent}} className="h-6 w-6" />}
+                icon={
+                  <Calendar
+                    style={{ color: colors.accent }}
+                    className="h-6 w-6"
+                  />
+                }
                 title="Start Date"
-                value={`${new Date(event.startDate).toLocaleDateString()} • ${event.startTime}`}
+                value={`${new Date(event.startDate).toLocaleDateString()} • ${
+                  event.startTime
+                }`}
               />
               {event.endDate && (
                 <DetailCard
-                  icon={<Clock style={{color : colors.accent}} className="h-6 w-6" />}
+                  icon={
+                    <Clock
+                      style={{ color: colors.accent }}
+                      className="h-6 w-6"
+                    />
+                  }
                   title="End Date"
-                  value={`${new Date(event.endDate).toLocaleDateString()} • ${event.endTime}`}
+                  value={`${new Date(event.endDate).toLocaleDateString()} • ${
+                    event.endTime
+                  }`}
                 />
               )}
               <DetailCard
-                icon={<MapPin style={{color : colors.accent}} className="h-6 w-6 " />}
+                icon={
+                  <MapPin
+                    style={{ color: colors.accent }}
+                    className="h-6 w-6 "
+                  />
+                }
                 title="Venue"
                 value={
                   <>
                     {event.venue?.name}
-                    <div className="text-gray-500 text-sm">{event.venue?.address}</div>
+                    <div className="text-gray-500 text-sm">
+                      {event.venue?.address}
+                    </div>
                   </>
                 }
               />
               <DetailCard
-                icon={<Users style={{color : colors.accent}} className="h-6 w-6" />}
+                icon={
+                  <Users style={{ color: colors.accent }} className="h-6 w-6" />
+                }
                 title="Capacity"
                 value={
                   <>
                     {totalSeats} seats total
-                    <div className="text-green-600 text-sm">{availableSeats} available</div>
+                    <div className="text-green-600 text-sm">
+                      {availableSeats} available
+                    </div>
                   </>
                 }
               />
@@ -219,13 +250,15 @@ const [normalPrice, setNormalPrice] = useState(0);
 
               {/* Normal Price */}
               <div className="text-center">
-                <div style={{color : colors.primary}} className="text-2xl font-bold mb-1">
+                <div
+                  style={{ color: colors.primary }}
+                  className="text-2xl font-bold mb-1"
+                >
                   Rs. {normalPrice?.toLocaleString("en-LK") || "0"}
                 </div>
                 <p className="text-gray-600">Normal ticket</p>
               </div>
             </div>
-
 
             <div className="space-y-3">
               <div className="flex justify-between text-sm font-medium">
@@ -237,14 +270,18 @@ const [normalPrice, setNormalPrice] = useState(0);
               <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
                 <div
                   className="bg-green-500 h-3 rounded-full transition-all duration-500"
-                  style={{ width: totalSeats ? `${(availableSeats / totalSeats) * 100}%` : "0%" }}
+                  style={{
+                    width: totalSeats
+                      ? `${(availableSeats / totalSeats) * 100}%`
+                      : "0%",
+                  }}
                 ></div>
               </div>
             </div>
 
             <button
               onClick={handleBookNow}
-              style={{backgroundColor : colors.primary}}
+              style={{ backgroundColor: colors.primary }}
               className="w-full  text-white  py-4 rounded-lg font-semibold shadow-md transition-colors"
             >
               Select Seats & Book Now

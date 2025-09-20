@@ -6,6 +6,9 @@ import { AppContext } from "../../context/AppContext";
 
 const OrderDetails = () => {
   const [events, setEvents] = useState([]);
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
   const [selectedEvent, setSelectedEvent] = useState("");
   const { api } = useContext(HeaderContext);
   const { userID } = useContext(AppContext);
@@ -27,24 +30,26 @@ const OrderDetails = () => {
     }
   }
 
-  const fetchOrders = async (eventID) => {
+  const fetchOrders = async (eventID, page = 0) => {
     if (!eventID) return;
-    console.log(eventID);
     try {
-      const res = await api.getOrdersByEvent(eventID);
-      console.log("Response: ", res);
-      if (Array.isArray(res)) {
-        setOrders(res);
+      const res = await api.getOrdersByEvent(eventID, page, size);
+      if (res && Array.isArray(res.content)) {
+        console.log("res");
+        setOrders(res.content);
+        setTotalPages(res.totalPages || 1);
       } else {
-        console.warn("Expected array but got:", res);
-        setOrders([]);
+        // fallback if backend sends plain array
+        console.log("ressss");
+        setOrders(Array.isArray(res) ? res : []);
+        setTotalPages(1);
       }
     } catch (error) {
-      console.error(`Error fetching orders for event ID ${eventID}:`, error);
+      console.error(error);
       setOrders([]);
+      setTotalPages(0);
     }
   };
-
 
   useEffect(() => {
     fetchEvents();
@@ -54,9 +59,9 @@ const OrderDetails = () => {
   useEffect(() => {
     if (selectedEvent) {
       console.log(selectedEvent);
-      fetchOrders(selectedEvent);
+      fetchOrders(selectedEvent, page);
     }
-  }, [selectedEvent]);
+  }, [selectedEvent, page]);
 
   return (
     <div className="p-6 space-y-6">
@@ -158,6 +163,27 @@ const OrderDetails = () => {
           </tbody>
         </table>
       </div>
+
+      <div className="flex justify-between items-center mt-4">
+        <button
+          disabled={page === 0}
+          onClick={() => setPage(page - 1)}
+          style={{backgroundColor : colors.primary}}
+          className="px-4 py-2 rounded text-white disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <span>Page {page + 1} of {totalPages}</span>
+        <button
+          disabled={page + 1 >= totalPages}
+          onClick={() => setPage(page + 1)}
+          style={{backgroundColor : colors.primary}}
+          className="px-4 py-2 rounded text-white disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
+
     </div>
   );
 };

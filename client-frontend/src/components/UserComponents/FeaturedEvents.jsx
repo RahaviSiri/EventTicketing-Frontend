@@ -1,144 +1,138 @@
-import { Calendar, MapPin, Users, ArrowRight } from "lucide-react";
+import { Calendar, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
-import React, { useContext, useEffect, useState } from 'react';
-import { AppContext } from "../../context/AppContext";
-import { Link } from "react-router-dom";
+import React, { useContext, useEffect, useState } from "react";
+import { HeaderContext } from "../../context/HeaderContext";
 import colors from "../../constants/colors";
+import { Link } from "react-router-dom";
 
-const FeaturedEvents = () => {
-    const [featuredEvents, setFeaturedEvents] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [current, setCurrent] = useState(0);
-    const [error, setError] = useState(null);
-    const { eventServiceURL } = useContext(AppContext);
-    const { token } = useContext(AppContext);
+const FeaturedEvents = ({ limit = 3 }) => {
+  const { api } = useContext(HeaderContext);          
+  const [featuredEvents, setFeaturedEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const fetchEvents = async () => {
-            if (!token) {
-                setError("User not authenticated.");
-                setLoading(false);
-                return;
-            }
-            try {
-                const res = await fetch(`${eventServiceURL}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (!res.ok) throw new Error(`Failed to fetch events: ${res.status}`);
-                const data = await res.json();
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        setLoading(true);
+        // ✅ fetch first `limit` events from paged endpoint
+        const data = await api.getAllEvents(0, limit);
+        const mapped = data.content.map((ev) => ({
+          id: ev.id,
+          title: ev.name,
+          date: ev.startDate,
+          location: ev.venue?.name || "TBD",
+          category: ev.category,
+          image: ev.imageUrl,
+          availableSeats: ev.availableSeats,
+        }));
+        setFeaturedEvents(mapped);
+      } catch (err) {
+        console.error(err);
+        setError(err.message || "Failed to load events");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFeatured();
+  }, [api, limit]);
 
-                const mappedData = data.map((ev) => ({
-                    id: ev.id,
-                    title: ev.name,
-                    date: ev.startDate,
-                    location: ev.venue?.name || "TBD",
-                    category: ev.category,
-                    image: ev.imageUrl,
-                    price: ev.price,
-                    rating: ev.rating,
-                    availableSeats: ev.availableSeats,
-                }));
-
-                setFeaturedEvents(mappedData);
-            } catch (err) {
-                console.error(err);
-                setError(err.message || "Unknown error");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchEvents();
-    }, [token]);
-
-    // Auto-slide
-    useEffect(() => {
-        if (featuredEvents.length === 0) return;
-        const interval = setInterval(() => {
-            setCurrent((prev) => (prev + 1) % featuredEvents.length);
-        }, 5000);
-        return () => clearInterval(interval);
-    }, [featuredEvents.length]);
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600"></div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="min-h-screen flex items-center justify-center text-red-600 bg-gray-50">
-                <p className="text-lg font-medium">{error}</p>
-            </div>
-        );
-    }
-
-    if (!featuredEvents.length) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <p className="text-gray-600 text-lg">No events available at the moment.</p>
-            </div>
-        );
-    }
-
+  if (loading) {
     return (
-        <section className="py-10">
-            <div className="max-w-7xl mx-auto px-6">
-                <div className="text-center mb-12">
-                    <h2 className="text-4xl font-bold text-gray-900">Featured <span style={{color : colors.accent}}>Events</span></h2>
-                    <p className="text-gray-600">Don’t miss these popular upcoming events</p>
+      <div className="flex justify-center items-center py-16 bg-gray-50">
+        <div className="animate-spin h-12 w-12 border-t-4 border-blue-600 rounded-full"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center py-16 bg-gray-50 text-red-600">
+        {error}
+      </div>
+    );
+  }
+
+  if (!featuredEvents.length) {
+    return (
+      <div className="flex justify-center items-center py-16 bg-gray-50 text-gray-600">
+        No events available at the moment.
+      </div>
+    );
+  }
+
+  return (
+    <section className="py-14 bg-gradient-to-b from-gray-50 to-white">
+      <div className="max-w-6xl mx-auto px-6">
+        {/* Section header */}
+        <div className="text-center mb-10">
+          <h2 className="text-4xl font-extrabold text-gray-900">
+            Featured <span style={{ color: colors.accent }}>Events</span>
+          </h2>
+          <p className="text-gray-600 mt-2">
+            A quick look at some upcoming highlights
+          </p>
+        </div>
+
+        {/* Cards */}
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {featuredEvents.map((event) => (
+            <motion.div
+              key={event.id}
+              whileHover={{ y: -4 }}
+              className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition"
+            >
+              <div className="relative">
+                <img
+                  src={event.image || "/placeholder.png"}
+                  alt={event.title}
+                  className="w-full h-56 object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+                <span
+                  className="absolute top-3 left-3 px-3 py-1 text-xs font-semibold text-white rounded-full"
+                  style={{ backgroundColor: colors.accent }}
+                >
+                  {event.category || "Uncategorized"}
+                </span>
+              </div>
+
+              <div className="p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">
+                  {event.title}
+                </h3>
+
+                <div className="flex items-center text-gray-600 text-sm mb-1">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  {event.date
+                    ? new Date(event.date).toLocaleDateString()
+                    : "Date TBD"}
                 </div>
 
-                <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
-                    {featuredEvents.map((event) => (
-                        <motion.div
-                            key={event.id}
-                            whileHover={{ scale: 1.03 }}
-                            className="rounded-xl shadow-md overflow-hidden transition transform hover:-translate-y-1"
-                            style={{backgroundColor : colors.secondary}} 
-                        >
-                            <img
-                                src={event.image || "/placeholder.png"}
-                                alt={event.title}
-                                className="w-full h-56 object-cover"
-                            />
-                            <div className="p-6">
-                                <span style={{backgroundColor : colors.accent}} className="text-white text-xs font-semibold px-3 py-1 rounded-full">
-                                    {event.category || "Uncategorized"}
-                                </span>
-                                <h3 className="text-xl font-semibold mt-3 text-gray-900 line-clamp-1">
-                                    {event.title}
-                                </h3>
-                                <div className="flex items-center text-gray-600 text-sm mt-2">
-                                    <Calendar className="h-4 w-4 mr-1" />
-                                    {event.date ? new Date(event.date).toLocaleDateString() : "Date TBD"}
-                                </div>
-                                <div className="flex items-center text-gray-600 text-sm mt-1">
-                                    <MapPin className="h-4 w-4 mr-1" />
-                                    {event.location || "Location TBD"}
-                                </div>
-                                {event.availableSeats !== undefined && (
-                                    <span className="text-sm text-gray-500 mt-2 block">
-                                        {event.availableSeats} seats left
-                                    </span>
-                                )}
-                                <Link
-                                    to={`/events/${event.id}`}
-                                    style={{backgroundColor : colors.primary}}
-                                    className="w-full mt-5 text-white px-4 py-2 rounded-lg transition block text-center font-medium"
-                                >
-                                    View Details
-                                </Link>
-                            </div>
-                        </motion.div>
-                    ))}
+                <div className="flex items-center text-gray-600 text-sm mb-2">
+                  <MapPin className="h-4 w-4 mr-1" />
+                  {event.location || "Location TBD"}
                 </div>
-            </div>
-        </section>
-    )
-}
 
-export default FeaturedEvents
+                {event.availableSeats !== undefined && (
+                  <p className="text-sm text-gray-500 mb-4">
+                    {event.availableSeats} seats left
+                  </p>
+                )}
+
+                <Link
+                  to={`/events/${event.id}`}
+                  className="inline-block w-full text-center text-white font-medium px-4 py-2 rounded-xl transition-colors"
+                  style={{ backgroundColor: colors.primary }}
+                >
+                  View Details
+                </Link>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default FeaturedEvents;
