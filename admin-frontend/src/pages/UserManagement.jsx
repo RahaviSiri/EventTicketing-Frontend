@@ -15,7 +15,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   Pagination,
@@ -35,106 +34,128 @@ import {
   Trash2,
 } from "lucide-react";
 
-// Mock data for users
-const mockUsers = [
+// Mock data for organizers
+const mockOrganizers = [
   {
     id: 1,
     name: "John Doe",
     email: "john.doe@example.com",
-    role: "Organizer",
     status: "Active",
-    avatar: "/api/placeholder/32/32",
   },
   {
     id: 2,
-    name: "Jane Smith",
-    email: "jane.smith@example.com",
-    role: "Attendee",
-    status: "Active",
-    avatar: "/api/placeholder/32/32",
+    name: "Mike Johnson",
+    email: "mike.johnson@example.com",
+    status: "Pending",
   },
   {
     id: 3,
-    name: "Mike Johnson",
-    email: "mike.johnson@example.com",
-    role: "Organizer",
-    status: "Pending",
-    avatar: "/api/placeholder/32/32",
+    name: "David Brown",
+    email: "david.brown@example.com",
+    status: "Active",
   },
   {
     id: 4,
-    name: "Sarah Wilson",
-    email: "sarah.wilson@example.com",
-    role: "Attendee",
-    status: "Suspended",
-    avatar: "/api/placeholder/32/32",
-  },
-  {
-    id: 5,
-    name: "David Brown",
-    email: "david.brown@example.com",
-    role: "Organizer",
-    status: "Active",
-    avatar: "/api/placeholder/32/32",
-  },
-  {
-    id: 6,
-    name: "Lisa Davis",
-    email: "lisa.davis@example.com",
-    role: "Attendee",
-    status: "Pending",
-    avatar: "/api/placeholder/32/32",
-  },
-  {
-    id: 7,
     name: "Tom Anderson",
     email: "tom.anderson@example.com",
-    role: "Organizer",
     status: "Active",
-    avatar: "/api/placeholder/32/32",
+  },
+];
+
+// Mock data for events
+const mockEvents = [
+  {
+    id: "EVT001",
+    eventName: "Tech Conference 2024",
+    organizerName: "John Doe",
+    organizerEmail: "john.doe@example.com",
+    status: "Active",
   },
   {
-    id: 8,
-    name: "Emily Taylor",
-    email: "emily.taylor@example.com",
-    role: "Attendee",
+    id: "EVT002",
+    eventName: "Music Festival",
+    organizerName: "David Brown",
+    organizerEmail: "david.brown@example.com",
     status: "Active",
-    avatar: "/api/placeholder/32/32",
+  },
+  {
+    id: "EVT003",
+    eventName: "Art Exhibition",
+    organizerName: "Tom Anderson",
+    organizerEmail: "tom.anderson@example.com",
+    status: "Active",
+  },
+  {
+    id: "EVT004",
+    eventName: "Food & Wine Expo",
+    organizerName: "John Doe",
+    organizerEmail: "john.doe@example.com",
+    status: "Cancelled",
+  },
+];
+
+// Mock data for pending events
+const mockPendingEvents = [
+  {
+    id: "EVT005",
+    eventName: "Sports Championship",
+    organizerName: "Mike Johnson",
+    organizerEmail: "mike.johnson@example.com",
+    status: "Pending",
+  },
+  {
+    id: "EVT006",
+    eventName: "Business Summit",
+    organizerName: "John Doe",
+    organizerEmail: "john.doe@example.com",
+    status: "Pending",
   },
 ];
 
 export default function UserManagement() {
-  const [activeFilter, setActiveFilter] = useState("All Users");
+  const [activeFilter, setActiveFilter] = useState("Organizers");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const filterButtons = [
-    "All Users",
-    "Attendees",
-    "Organizers",
-    "Pending Approval",
-  ];
+  const filterButtons = ["Organizers", "Events", "PendingEvents"];
 
-  // Filter users based on active filter and search query
-  const filteredUsers = mockUsers.filter((user) => {
-    const matchesFilter =
-      activeFilter === "All Users" ||
-      (activeFilter === "Attendees" && user.role === "Attendee") ||
-      (activeFilter === "Organizers" && user.role === "Organizer") ||
-      (activeFilter === "Pending Approval" && user.status === "Pending");
+  // Get current data based on active filter
+  const getCurrentData = () => {
+    switch (activeFilter) {
+      case "Organizers":
+        return mockOrganizers;
+      case "Events":
+        return mockEvents;
+      case "PendingEvents":
+        return mockPendingEvents;
+      default:
+        return mockOrganizers;
+    }
+  };
 
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase());
-
-    return matchesFilter && matchesSearch;
+  // Filter data based on search query
+  const filteredData = getCurrentData().filter((item) => {
+    if (activeFilter === "Organizers") {
+      const organizer = item;
+      return (
+        organizer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        organizer.email.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    } else {
+      const event = item;
+      return (
+        event.eventName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.organizerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.organizerEmail.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
   });
 
   // Pagination logic
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedUsers = filteredUsers.slice(
+  const paginatedData = filteredData.slice(
     startIndex,
     startIndex + itemsPerPage
   );
@@ -159,6 +180,15 @@ export default function UserManagement() {
             Pending
           </Badge>
         );
+      case "Cancelled":
+        return (
+          <Badge
+            variant="destructive"
+            className="bg-red-100 text-red-800 border-red-200"
+          >
+            Cancelled
+          </Badge>
+        );
       case "Suspended":
         return (
           <Badge
@@ -177,9 +207,174 @@ export default function UserManagement() {
     }
   };
 
-  const handleActionClick = (action, userId) => {
-    console.log(`${action} clicked for user ${userId}`);
+  const handleActionClick = (action, itemId) => {
+    console.log(`${action} clicked for item ${itemId}`);
     // Implement actual action logic here
+  };
+
+  const renderTableHeaders = () => {
+    if (activeFilter === "Organizers") {
+      return (
+        <TableRow className="bg-gray-50">
+          <TableHead>Name</TableHead>
+          <TableHead>Email</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
+        </TableRow>
+      );
+    } else {
+      return (
+        <TableRow className="bg-gray-50">
+          <TableHead>Event ID</TableHead>
+          <TableHead>Event Name</TableHead>
+          <TableHead>Organizer Name</TableHead>
+          <TableHead>Organizer Email</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
+        </TableRow>
+      );
+    }
+  };
+
+  const renderTableRows = () => {
+    if (paginatedData.length === 0) {
+      return (
+        <TableRow>
+          <TableCell
+            colSpan={activeFilter === "Organizers" ? 4 : 6}
+            className="text-center py-8"
+          >
+            <div className="text-gray-500">
+              No {activeFilter.toLowerCase()} found matching your criteria
+            </div>
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    return paginatedData.map((item) => (
+      <TableRow key={item.id} className="hover:bg-gray-50">
+        {activeFilter === "Organizers" ? (
+          <>
+            <TableCell className="font-medium text-gray-900">
+              {item.name}
+            </TableCell>
+            <TableCell className="text-gray-600">{item.email}</TableCell>
+            <TableCell>{getStatusBadge(item.status)}</TableCell>
+            <TableCell className="text-right">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem
+                    onClick={() => handleActionClick("View Profile", item.id)}
+                  >
+                    <Eye className="mr-2 h-4 w-4" />
+                    View Profile
+                  </DropdownMenuItem>
+                  {item.status === "Pending" && (
+                    <>
+                      <DropdownMenuItem
+                        onClick={() => handleActionClick("Approve", item.id)}
+                      >
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Approve
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleActionClick("Reject", item.id)}
+                      >
+                        <XCircle className="mr-2 h-4 w-4" />
+                        Reject
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {item.status === "Active" && (
+                    <DropdownMenuItem
+                      onClick={() => handleActionClick("Suspend", item.id)}
+                    >
+                      <Ban className="mr-2 h-4 w-4" />
+                      Suspend
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem
+                    onClick={() => handleActionClick("Delete", item.id)}
+                    className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </TableCell>
+          </>
+        ) : (
+          <>
+            <TableCell className="font-mono text-sm">{item.id}</TableCell>
+            <TableCell className="font-medium text-gray-900">
+              {item.eventName}
+            </TableCell>
+            <TableCell className="text-gray-900">
+              {item.organizerName}
+            </TableCell>
+            <TableCell className="text-gray-600">
+              {item.organizerEmail}
+            </TableCell>
+            <TableCell>{getStatusBadge(item.status)}</TableCell>
+            <TableCell className="text-right">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem
+                    onClick={() => handleActionClick("View Event", item.id)}
+                  >
+                    <Eye className="mr-2 h-4 w-4" />
+                    View Event
+                  </DropdownMenuItem>
+                  {item.status === "Pending" && (
+                    <>
+                      <DropdownMenuItem
+                        onClick={() => handleActionClick("Approve", item.id)}
+                      >
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Approve
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleActionClick("Reject", item.id)}
+                      >
+                        <XCircle className="mr-2 h-4 w-4" />
+                        Reject
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {item.status === "Active" && (
+                    <DropdownMenuItem
+                      onClick={() => handleActionClick("Cancel", item.id)}
+                    >
+                      <Ban className="mr-2 h-4 w-4" />
+                      Cancel
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem
+                    onClick={() => handleActionClick("Delete", item.id)}
+                    className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </TableCell>
+          </>
+        )}
+      </TableRow>
+    ));
   };
 
   return (
@@ -218,7 +413,11 @@ export default function UserManagement() {
         <div className="relative w-full md:w-80">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
           <Input
-            placeholder="Search users by name or email..."
+            placeholder={
+              activeFilter === "Organizers"
+                ? "Search organizers by name or email..."
+                : "Search events by name or organizer..."
+            }
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -232,109 +431,8 @@ export default function UserManagement() {
       {/* Data Table */}
       <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
         <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-50">
-              <TableHead className="w-16">Avatar</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedUsers.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-8">
-                  <div className="text-gray-500">
-                    No users found matching your criteria
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              paginatedUsers.map((user) => (
-                <TableRow key={user.id} className="hover:bg-gray-50">
-                  <TableCell>
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback>
-                        {user.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                  </TableCell>
-                  <TableCell className="font-medium text-gray-900">
-                    {user.name}
-                  </TableCell>
-                  <TableCell className="text-gray-600">{user.email}</TableCell>
-                  <TableCell>{user.role}</TableCell>
-                  <TableCell>{getStatusBadge(user.status)}</TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem
-                          onClick={() =>
-                            handleActionClick("View Profile", user.id)
-                          }
-                        >
-                          <Eye className="mr-2 h-4 w-4" />
-                          View Profile
-                        </DropdownMenuItem>
-                        {user.status === "Pending" && (
-                          <>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                handleActionClick("Approve", user.id)
-                              }
-                            >
-                              <CheckCircle className="mr-2 h-4 w-4" />
-                              Approve
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                handleActionClick("Reject", user.id)
-                              }
-                            >
-                              <XCircle className="mr-2 h-4 w-4" />
-                              Reject
-                            </DropdownMenuItem>
-                          </>
-                        )}
-                        {user.status === "Active" && (
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleActionClick("Suspend", user.id)
-                            }
-                          >
-                            <Ban className="mr-2 h-4 w-4" />
-                            Suspend
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem
-                          onClick={() => handleActionClick("Delete", user.id)}
-                          className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
+          <TableHeader>{renderTableHeaders()}</TableHeader>
+          <TableBody>{renderTableRows()}</TableBody>
         </Table>
       </div>
 
@@ -386,8 +484,8 @@ export default function UserManagement() {
       {/* Results Summary */}
       <div className="text-sm text-gray-600 text-center">
         Showing {startIndex + 1} to{" "}
-        {Math.min(startIndex + itemsPerPage, filteredUsers.length)} of{" "}
-        {filteredUsers.length} users
+        {Math.min(startIndex + itemsPerPage, filteredData.length)} of{" "}
+        {filteredData.length} {activeFilter.toLowerCase()}
       </div>
     </div>
   );
