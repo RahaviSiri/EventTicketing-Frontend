@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Search, Filter, Star } from 'lucide-react';
 import { AppContext } from '../../context/AppContext';
 import colors from '../../constants/colors';
+import { HeaderContext } from '../../context/HeaderContext';
+import { EventCategoriesEnum } from '../../constants/EventCategories';
 
 const Events = () => {
   const [events, setEvents] = useState([]);
@@ -10,8 +12,12 @@ const Events = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { api } = useContext(HeaderContext);
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(6);
+  const [totalPages, setTotalPages] = useState(0);
 
-  const { token,eventServiceURL } = useContext(AppContext);
+  const { token } = useContext(AppContext);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -20,18 +26,12 @@ const Events = () => {
         setLoading(false);
         return;
       }
-
       try {
         setLoading(true);
-        const response = await fetch(`${eventServiceURL}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!response.ok) {
-          throw new Error(`Failed to fetch events: ${response.status}`);
-        }
-        const data = await response.json();
-
-        const mappedData = data.map((ev) => ({
+        const data = await api.getAllEvents(page,size);
+        console.log(data);
+        setTotalPages(data.totalPages);
+        const mappedData = data.content.map((ev) => ({
           id: ev.id,
           title: ev.name,
           date: ev.startDate,
@@ -53,7 +53,7 @@ const Events = () => {
     };
 
     fetchEvents();
-  }, [token]);
+  }, [api, page, size, token]);
 
   const filteredEvents = events.filter(event => {
     const title = event.title || '';
@@ -66,7 +66,7 @@ const Events = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const categories = ['all', 'Conference', 'Workshop', 'Seminar', 'Meetup', 'Expo'];
+  const categories = Object.values(EventCategoriesEnum);
 
   if (loading) {
     return (
@@ -182,6 +182,27 @@ const Events = () => {
             ))}
           </div>
         )}
+      </div>
+      <div className="flex justify-center items-center mt-10 gap-4">
+        <button
+          disabled={page === 0}
+          onClick={() => setPage(page - 1)}
+          style={{ backgroundColor: colors.primary }}
+          className="px-4 py-2 rounded text-white disabled:opacity-50"
+        >
+          Prev
+        </button>
+        <span>
+          Page {page + 1} of {totalPages}
+        </span>
+        <button
+          disabled={page + 1 >= totalPages}
+          onClick={() => setPage(page + 1)}
+          style={{ backgroundColor: colors.primary }}
+          className="px-4 py-2 rounded text-white disabled:opacity-50"
+        >
+          Next
+        </button>
       </div>
     </div>
   );

@@ -1,14 +1,18 @@
 import React, { useContext, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { loadStripe } from "@stripe/stripe-js";
-import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import {
+  Elements,
+  CardElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
 import { motion } from "framer-motion";
 import { CreditCard, CheckCircle } from "lucide-react";
 import { AppContext } from "../../context/AppContext";
+import colors from "../../constants/colors";
 
-const stripePromise = loadStripe(
-  "pk_test_51RlZTHHtjMJALymh2E5t3Gnn5C2ViS2jSIL1Nuop16zrmddAfaM41kWxv93ItFg2JSSc2TCG8u8jRLsb3osHwwuj00g9AnZ04g"
-);
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 // --- Checkout Form ---
 const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
@@ -17,26 +21,63 @@ const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { paymentServiceURL } = useContext(AppContext);
+  const {
+    paymentServiceURL,
+    seatingServiceURL,
+    ticketServiceURL,
+    token,
+    userID,
+    orderServiceURL,
+  } = useContext(AppContext);
+
+  const eventId = event?.id;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
+    console.log("Event ", event);
+    console.log("Selected seats from Payment Page ", selectedSeats);
+    console.log("Total Price " + totalPrice);
+
     try {
-      const res = await fetch(`${paymentServiceURL}/create-payment-intent`, {
+      console.log("token:", token);
+
+      const res = await fetch(`${paymentServiceURL}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
-          amount: totalPrice * 100,
-          currency: "LKR",
-          eventId: event.id,
-          seats: selectedSeats, // full objects
+          userId: userID,
+          amount: totalPrice,
+          currency: "USD",
+          paymentMethod: "card",
         }),
       });
 
-      const { clientSecret } = await res.json();
+      const text = await res.text();
+      console.log("Text ", text);
+      let data;
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (parseErr) {
+        setError("Server returned invalid JSON: " + parseErr.message);
+        setLoading(false);
+        return;
+      }
+
+      const clientSecret = data.clientSecret;
+      console.log("Client Secret : ", clientSecret);
+      if (!clientSecret) {
+        setError(
+          data.message || `Payment endpoint returned status ${res.status}`
+        );
+        setLoading(false);
+        return;
+      }
 
       const result = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
@@ -44,13 +85,120 @@ const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
           billing_details: { name: "Customer Name" },
         },
       });
+      console.log(result);
 
       if (result.error) {
         setError(result.error.message);
       } else if (result.paymentIntent.status === "succeeded") {
-        navigate(`/events/${event.id}/success`, {
-          state: { event, selectedSeats, totalPrice },
-        });
+        try {
+          // Extract seat numbers from selectedSeats
+          const seatNumbers = selectedSeats.map((s) => s.seatNumber);
+          console.log("Seat numbers to confirm:", seatNumbers);
+          if (!seatNumbers || seatNumbers.length === 0) {
+            alert("No seats to confirm!");
+            return;
+          }
+          console.log("Seat numbers being sent to backend:", seatNumbers);
+          const res = await fetch(`${seatingServiceURL}/${eventId}/confirm`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ seatNumbers }),
+          });
+          console.log("Res after stripe Confirmation ", res);
+          if (!res.ok) {
+            const errData = await res.json();
+            alert(
+              `Failed to confirm seats: ${errData.message || "Unknown error"}`
+            );
+            return;
+          }
+
+          console.log("Seats confirmed:");
+          console.log("Event ID", eventId);
+          console.log("Event name", event.name);
+          console.log("Venue name ", event.venue?.name);
+          const seatNumbersStr = selectedSeats.map((s) => s.seatNumber).join(",");
+
+          const resp = await fetch(`${ticketServiceURL}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              eventId: event.id,
+              userId: userID,
+              seatNumbers: seatNumbersStr,
+              price: totalPrice,
+              eventDate: event.startDate
+                ? new Date(event.startDate).toISOString()
+                : null,
+              venueName: event.venue?.name || "",
+              eventName: event.name,
+
+            }),
+          });
+          if (!resp.ok) {
+            const text = await resp.text();
+            alert(text || `Ticket creation failed with status ${resp.status}`);
+            setLoading(false);
+            return;
+          }
+          const ticketData = await resp.json();
+
+          console.log("Ticket created:", ticketData);
+
+          console.log(ticketData.ticketId);
+
+          // Update payment with ticket ID
+          if (ticketData?.ticketId) {
+            const updatePaymentRes = await fetch(`${paymentServiceURL}/${data.paymentId}/assign-ticket/${ticketData.ticketId}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            });
+
+            if (!updatePaymentRes.ok) {
+              console.warn("Failed to assign ticket ID to payment");
+            } else {
+              console.log("Payment updated with ticket ID");
+            }
+          }
+
+          // Update order 
+          if (ticketData?.ticketId) {
+            const updateOrderRes = await fetch(`${orderServiceURL}`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body : JSON.stringify({
+                eventId: event.id,
+                userId: userID,
+                ticketId: ticketData.ticketId,
+                price : totalPrice
+              })
+            });
+
+            const data = await updateOrderRes.json();
+            console.log("Order Created", data);
+
+          }
+
+          // Navigate to success page
+          navigate(`/events/${event.id}/success`, {
+            state: { event, selectedSeats, totalPrice, ticketData },
+          });
+        } catch (err) {
+          console.error(err);
+          alert(err.message);
+        }
       }
     } catch (err) {
       setError(err.message);
@@ -71,28 +219,11 @@ const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
         <CreditCard size={24} /> Payment Details
       </h2>
 
-      {/* Event Summary */}
-      {/* <div className="p-4 bg-gray-50 rounded-lg shadow-sm space-y-2">
-        <p><strong>Event:</strong> {event.name}</p>
-        <p><strong>Venue:</strong> {event.venue?.name || "N/A"}</p>
-        <p><strong>City:</strong> {event.venue?.city || "N/A"}</p>
-        <p><strong>Date:</strong> {new Date(event.startDate).toLocaleString()}</p>
-        <div>
-          <strong>Seats:</strong>
-          <ul className="list-disc list-inside">
-            {selectedSeats?.map((seat, index) => (
-              <li key={index}>
-                {seat.seatNumber} – {seat.seatType} (Rs.{seat.price})
-              </li>
-            )) || <li>No seats selected</li>}
-          </ul>
-        </div>
-        <p className="text-lg font-semibold text-blue-600">Total: Rs.{totalPrice}</p>
-      </div> */}
-
       {/* Card Input */}
       <div className="p-4 border rounded-lg bg-white shadow-sm">
-        <label className="block mb-2 font-medium text-gray-700">Card Information</label>
+        <label className="block mb-2 font-medium text-gray-700">
+          Card Information
+        </label>
         <div className="p-3 border rounded bg-gray-50">
           <CardElement
             options={{
@@ -116,9 +247,11 @@ const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
       <button
         type="submit"
         disabled={!stripe || loading}
-        className={`w-full py-3 rounded-lg font-semibold text-white shadow transition-colors ${
-          loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
-        }`}
+        style={{
+          backgroundColor: loading ? "bg-gray-400" : colors.primary,
+          cursor: loading ? "not-allowed" : "pointer",
+        }}
+        className={`w-full py-3 rounded-lg font-semibold text-white shadow transition-colors`}
       >
         {loading ? "Processing..." : `Pay Rs.${totalPrice}`}
       </button>
@@ -154,9 +287,15 @@ const Payment = () => {
           <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
             <CheckCircle size={24} /> {event.name}
           </h1>
-          <p><strong>Venue:</strong> {event.venue?.name || "N/A"}</p>
-          <p><strong>City:</strong> {event.venue?.city || "N/A"}</p>
-          <p><strong>Date:</strong> {new Date(event.startDate).toLocaleString()}</p>
+          <p>
+            <strong>Venue:</strong> {event.venue?.name || "N/A"}
+          </p>
+          <p>
+            <strong>City:</strong> {event.venue?.city || "N/A"}
+          </p>
+          <p>
+            <strong>Date:</strong> {new Date(event.startDate).toLocaleString()}
+          </p>
           <div>
             <strong>Seats:</strong>
             <ul className="list-disc list-inside">
@@ -167,19 +306,9 @@ const Payment = () => {
               ))}
             </ul>
           </div>
-          <p className="text-xl font-semibold text-blue-600">Total: Rs.{totalPrice}</p>
-
-          {/* Skip Payment Button */}
-          <button
-            onClick={() =>
-              navigate(`/events/${event.id}/success`, {
-                state: { event, selectedSeats, totalPrice },
-              })
-            }
-            className="mt-4 w-full py-3 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition"
-          >
-            Skip Payment (Go to Success Page)
-          </button>
+          <p className="text-xl font-semibold text-blue-600">
+            Total: Rs.{totalPrice}
+          </p>
         </motion.div>
 
         {/* Right: Payment Form */}
@@ -190,7 +319,11 @@ const Payment = () => {
           transition={{ duration: 0.5 }}
         >
           <Elements stripe={stripePromise}>
-            <CheckoutForm event={event} selectedSeats={selectedSeats} totalPrice={totalPrice} />
+            <CheckoutForm
+              event={event}
+              selectedSeats={selectedSeats}
+              totalPrice={totalPrice}
+            />
           </Elements>
         </motion.div>
       </div>

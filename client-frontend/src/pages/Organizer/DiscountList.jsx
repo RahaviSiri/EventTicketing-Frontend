@@ -14,58 +14,32 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import colors from "../../constants/colors"
-// import { useNavigate } from "react-router-dom";
+import { HeaderContext } from "../../context/HeaderContext";
 
 const DiscountList = () => {
-  const { eventServiceURL, discountServiceURL, token, userID } = useContext(AppContext);
+  const { userID } = useContext(AppContext);
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState("");
   const [discounts, setDiscounts] = useState([]);
-  // const navigate = useNavigate();
+  const { api } = useContext(HeaderContext);
 
   // Fetch events for the organizer
   useEffect(() => {
     if (!userID) return;
-    const fetchEvents = async () => {
-      try {
-        const res = await fetch(`${eventServiceURL}/organizer/${userID}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        setEvents(data);
-      } catch (err) {
-        console.error("Error fetching events:", err);
-      }
-    };
-    fetchEvents();
-  }, [userID, eventServiceURL, token]);
+    api.getEventsByOrganizer(userID).then(setEvents).catch(console.error);
+  }, [userID, api]);
 
   // Fetch discounts for selected event
   useEffect(() => {
     if (!selectedEvent) return;
-    const fetchDiscounts = async () => {
-      try {
-        const res = await fetch(`${discountServiceURL}/event/${selectedEvent}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        setDiscounts(data);
-      } catch (err) {
-        console.error("Error fetching discounts:", err);
-      }
-    };
-    fetchDiscounts();
-  }, [selectedEvent, discountServiceURL, token]);
+    api.getDiscountsByEvent(selectedEvent).then(setDiscounts).catch(console.error);
+  }, [selectedEvent, api]);
 
   // Delete discount
   const handleDelete = async (id) => {
     try {
-      await fetch(`${discountServiceURL}/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setDiscounts(discounts.filter((d) => d.id !== id));
-      //   navigate("/organizers/discountsLists");
+      await api.deleteDiscount(id);
+      setDiscounts((prev) => prev.filter((d) => d.id !== id));
     } catch (err) {
       console.error("Error deleting discount:", err);
     }

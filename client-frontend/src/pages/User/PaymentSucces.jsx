@@ -4,11 +4,12 @@ import { CheckCircle, Download, Mail, Calendar, MapPin, Tag } from "lucide-react
 import { QRCodeCanvas } from "qrcode.react";
 import jsPDF from "jspdf";
 import { motion } from "framer-motion";
+import colors from "../../constants/colors";
 
 const PaymentSuccess = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { event, selectedSeats, totalPrice, seatDetails } = location.state || {};
+  const { event, selectedSeats, totalPrice, seatDetails ,ticketData} = location.state || {};
   const qrRef = useRef();
 
   useEffect(() => {
@@ -19,11 +20,12 @@ const PaymentSuccess = () => {
     if (!event) return;
 
     let qrDataUrl = "";
-    if (qrRef.current) {
-      const canvas = qrRef.current.querySelector("canvas");
-      if (canvas) qrDataUrl = canvas.toDataURL();
-    }
-
+if (ticketData?.qrCode) {
+  qrDataUrl = `data:image/png;base64,${ticketData.qrCode}`;
+} else if (qrRef.current) {
+  const canvas = qrRef.current.querySelector("canvas");
+  if (canvas) qrDataUrl = canvas.toDataURL();
+}
     const doc = new jsPDF();
     doc.setFontSize(20);
     doc.text("E-Ticket", 105, 20, { align: "center" });
@@ -100,7 +102,7 @@ const PaymentSuccess = () => {
               ))}
             </div>
 
-            <div className="flex justify-between mt-4 font-bold text-lg text-blue-600">
+            <div style={{color : colors.primary}} className="flex justify-between mt-4 font-bold text-lg">
               <span>Total Paid</span>
               <span>Rs.{totalPrice}</span>
             </div>
@@ -113,10 +115,18 @@ const PaymentSuccess = () => {
             <Tag size={18} /> Your E-Ticket QR
           </h3>
           <div ref={qrRef} className="p-4 bg-gray-50 rounded-lg">
-            <QRCodeCanvas
-              value={JSON.stringify({ eventId: event.id, seats: selectedSeats, totalPrice })}
-              size={180}
-            />
+            {ticketData?.qrCode ? (
+          <img
+            src={`data:image/png;base64,${ticketData.qrCode}`}
+            alt="Ticket QR Code"
+            className="w-44 h-44"
+          />
+        ) : (
+          <QRCodeCanvas
+            value={JSON.stringify({ eventId: event.id, seats: selectedSeats, totalPrice })}
+            size={180}
+          />
+        )}
           </div>
           <p className="text-sm text-gray-500 text-center">
             Show this QR code at the event entrance
@@ -124,7 +134,8 @@ const PaymentSuccess = () => {
 
           <button
             onClick={downloadTicket}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
+            style={{backgroundColor : colors.primary}}
+            className="w-full text-white py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
           >
             <Download size={16} /> Download Ticket
           </button>
@@ -135,6 +146,7 @@ const PaymentSuccess = () => {
           >
             <Mail size={16} /> Email Confirmation
           </button>
+          
 
           <Link
             to="/events"

@@ -1,7 +1,5 @@
 import React from 'react';
 
-
-
 const SeatMapSVG = ({ seats, selected, onToggle }) => (
   <svg width="300" height="200">
     {seats.map(seat => (

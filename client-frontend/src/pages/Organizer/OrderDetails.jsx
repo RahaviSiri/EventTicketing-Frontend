@@ -1,38 +1,74 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import colors from "../../constants/colors";
 import { MdReceipt } from "react-icons/md";
-
-// Dummy events
-const events = [
-  { id: 1, name: "Music Fest 2025" },
-  { id: 2, name: "Tech Conference 2025" },
-  { id: 3, name: "Charity Gala Dinner" },
-];
-
-// Dummy orders (normally you’d fetch based on eventId)
-const ordersData = {
-  1: [
-    { id: "ORD123", attendee: "John Doe", email: "john@example.com", ticket: "VIP", price: "LKR 5000", status: "Paid", date: "Aug 20, 2025", checkIn: true },
-    { id: "ORD124", attendee: "Jane Smith", email: "jane@example.com", ticket: "Regular", price: "LKR 2000", status: "Pending", date: "Aug 21, 2025", checkIn: false },
-  ],
-  2: [
-    { id: "ORD201", attendee: "Sam Perera", email: "sam@example.com", ticket: "Standard", price: "LKR 3000", status: "Paid", date: "Sep 01, 2025", checkIn: false },
-  ],
-  3: [
-    { id: "ORD301", attendee: "Ravi Kumar", email: "ravi@example.com", ticket: "Donor", price: "LKR 10,000", status: "Paid", date: "Oct 01, 2025", checkIn: true },
-  ],
-};
+import { HeaderContext } from "../../context/HeaderContext"
+import { AppContext } from "../../context/AppContext";
 
 const OrderDetails = () => {
-  const [selectedEvent, setSelectedEvent] = useState(events[0].id);
-  const orders = ordersData[selectedEvent] || [];
+  const [events, setEvents] = useState([]);
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [selectedEvent, setSelectedEvent] = useState("");
+  const { api } = useContext(HeaderContext);
+  const { userID } = useContext(AppContext);
+  const [orders, setOrders] = useState([]);
+
+  const fetchEvents = async () => {
+    if (!userID) return;
+    // console.log(userID);
+    try {
+      const data = await api.getEventsByOrganizer(userID);
+      console.log(data);
+      setEvents(data);
+      if (data.length > 0) {
+        setSelectedEvent(data[0].event.id);
+
+      }
+    } catch (error) {
+      console.log("Error in fetching events" + error);
+    }
+  }
+
+  const fetchOrders = async (eventID, page = 0) => {
+    if (!eventID) return;
+    try {
+      const res = await api.getOrdersByEvent(eventID, page, size);
+      if (res && Array.isArray(res.content)) {
+        console.log("res");
+        setOrders(res.content);
+        setTotalPages(res.totalPages || 1);
+      } else {
+        // fallback if backend sends plain array
+        console.log("ressss");
+        setOrders(Array.isArray(res) ? res : []);
+        setTotalPages(1);
+      }
+    } catch (error) {
+      console.error(error);
+      setOrders([]);
+      setTotalPages(0);
+    }
+  };
+
+  useEffect(() => {
+    fetchEvents();
+    // console.log(events);
+  }, [api, userID])
+
+  useEffect(() => {
+    if (selectedEvent) {
+      console.log(selectedEvent);
+      fetchOrders(selectedEvent, page);
+    }
+  }, [selectedEvent, page]);
 
   return (
     <div className="p-6 space-y-6">
       <div style={{ backgroundColor: colors.primary }} className="rounded-2xl p-6 shadow-lg text-white space-y-2">
         {/* Page Title */}
         <h1 className="text-xl font-bold flex items-center gap-2">
-          <MdReceipt size={24} /> 
+          <MdReceipt size={24} />
           Order Details
         </h1>
 
@@ -62,8 +98,8 @@ const OrderDetails = () => {
           }}
         >
           {events.map((event) => (
-            <option key={event.id} value={event.id}>
-              {event.name}
+            <option key={event.event.id} value={event.event.id}>
+              {event.event.name}
             </option>
           ))}
         </select>
@@ -77,7 +113,7 @@ const OrderDetails = () => {
               <th className="p-3">Order ID</th>
               <th className="p-3">Attendee</th>
               <th className="p-3">Email</th>
-              <th className="p-3">Ticket</th>
+              <th className="p-3">Ticket ID</th>
               <th className="p-3">Price</th>
               <th className="p-3">Status</th>
               <th className="p-3">Date</th>
@@ -88,9 +124,9 @@ const OrderDetails = () => {
             {orders.map((order) => (
               <tr key={order.id} className="border-b">
                 <td className="p-3">{order.id}</td>
-                <td className="p-3">{order.attendee}</td>
-                <td className="p-3">{order.email}</td>
-                <td className="p-3">{order.ticket}</td>
+                <td className="p-3">{order.attendeeName}</td>
+                <td className="p-3">{order.attendeeEmail}</td>
+                <td className="p-3">{order.ticketId}</td>
                 <td className="p-3">{order.price}</td>
                 <td
                   className={`p-3 font-semibold ${order.status === "Paid" ? "text-green-600" : "text-yellow-600"
@@ -98,7 +134,16 @@ const OrderDetails = () => {
                 >
                   {order.status}
                 </td>
-                <td className="p-3">{order.date}</td>
+                <td className="p-3">
+                  {new Intl.DateTimeFormat("en-GB", {
+                    year: "numeric",
+                    month: "short",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }).format(new Date(order.createdAt))}
+                </td>
+
                 <td className="p-3">
                   {order.checkIn ? (
                     <span className="text-green-600">✅ Checked-In</span>
@@ -118,6 +163,27 @@ const OrderDetails = () => {
           </tbody>
         </table>
       </div>
+
+      <div className="flex justify-between items-center mt-4">
+        <button
+          disabled={page === 0}
+          onClick={() => setPage(page - 1)}
+          style={{backgroundColor : colors.primary}}
+          className="px-4 py-2 rounded text-white disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <span>Page {page + 1} of {totalPages}</span>
+        <button
+          disabled={page + 1 >= totalPages}
+          onClick={() => setPage(page + 1)}
+          style={{backgroundColor : colors.primary}}
+          className="px-4 py-2 rounded text-white disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
+
     </div>
   );
 };
