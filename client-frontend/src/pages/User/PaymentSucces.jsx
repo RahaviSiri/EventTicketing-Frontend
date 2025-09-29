@@ -140,13 +140,7 @@ if (ticketData?.qrCode) {
             <Download size={16} /> Download Ticket
           </button>
 
-          <button
-            onClick={sendConfirmationEmail}
-            className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
-          >
-            <Mail size={16} /> Email Confirmation
-          </button>
-          
+       
 
           <Link
             to="/events"
