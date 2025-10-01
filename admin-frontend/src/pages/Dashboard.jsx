@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import {
   DollarSign,
   Calendar,
@@ -35,27 +36,38 @@ import {
 } from "recharts";
 import StatCard from "@/components/StatCard";
 
-const revenueData = [
-  { name: "Jan", revenue: 4000 },
-  { name: "Feb", revenue: 3000 },
-  { name: "Mar", revenue: 5000 },
-  { name: "Apr", revenue: 4500 },
-  { name: "May", revenue: 6000 },
-  { name: "Jun", revenue: 5500 },
-];
-
-const userEventData = [
-  { name: "Jan", signups: 120, events: 15 },
-  { name: "Feb", signups: 190, events: 22 },
-  { name: "Mar", signups: 300, events: 35 },
-  { name: "Apr", signups: 250, events: 28 },
-  { name: "May", signups: 400, events: 42 },
-  { name: "Jun", signups: 350, events: 38 },
-];
-
 export default function Dashboard() {
   const [dateFilter, setDateFilter] = useState("Last 7 days");
+  const [dashboardData, setDashboardData] = useState(null);
   const navigate = useNavigate();
+
+   const rangeMap = {
+     "Last 7 days": "last7days",
+     "This Month": "thisMonth",
+     "Last 3 Months": "last3months",
+     "This Year": "thisYear",
+  };
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const rangeParam = rangeMap[dateFilter] || "last7days";
+        const token = localStorage.getItem("AdminToken");
+        const res = await axios.get(
+          `http://localhost:8080/api/admin/dashboard?range=${rangeParam}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, 
+            },
+          }
+        );
+        setDashboardData(res.data);
+      } catch (err) {
+        console.error("Error fetching dashboard data", err);
+      }
+    };
+    fetchData();
+  }, [dateFilter]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -105,18 +117,14 @@ export default function Dashboard() {
                 border: "1px solid hsl(var(--border))",
               }}
             >
-              <DropdownMenuItem onClick={() => setDateFilter("Last 7 days")}>
-                Last 7 days
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setDateFilter("This Month")}>
-                This Month
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setDateFilter("Last 3 Months")}>
-                Last 3 Months
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setDateFilter("This Year")}>
-                This Year
-              </DropdownMenuItem>
+              {Object.keys(rangeMap).map((label) => (
+                <DropdownMenuItem
+                  key={label}
+                  onClick={() => setDateFilter(label)}
+                >
+                  {label}
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -127,27 +135,39 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             title="Total Revenue"
-            value="$24,500"
+            value={`$ ${dashboardData?.totalRevenue ?? 0}`}
             icon={DollarSign}
-            trend={{ value: 12.5, isPositive: true }}
+            trend={{
+              value: dashboardData?.revenueTrend ?? 0,
+              isPositive: (dashboardData?.revenueTrend ?? 0) >= 0,
+            }}
           />
           <StatCard
             title="Active Events"
-            value="148"
+            value={dashboardData?.activeEvents ?? 0}
             icon={Calendar}
-            trend={{ value: 8.2, isPositive: true }}
+            trend={{
+              value: dashboardData?.eventsTrend ?? 0,
+              isPositive: (dashboardData?.eventsTrend ?? 0) >= 0,
+            }}
           />
           <StatCard
-            title="New Organizers (Pending)"
-            value="23"
+            title="Total Organizers"
+            value={dashboardData?.totalOrganizers ?? 0}
             icon={Users}
-            trend={{ value: 3.1, isPositive: false }}
+            trend={{
+              value: dashboardData?.organizersTrend ?? 0,
+              isPositive: (dashboardData?.organizersTrend ?? 0) >= 0,
+            }}
           />
           <StatCard
             title="Total Tickets Sold"
-            value="1,284"
+            value={dashboardData?.totalTicketsSold ?? 0}
             icon={Ticket}
-            trend={{ value: 15.8, isPositive: true }}
+            trend={{
+              value: dashboardData?.ticketsTrend ?? 0,
+              isPositive: (dashboardData?.ticketsTrend ?? 0) >= 0,
+            }}
           />
         </div>
 
@@ -165,13 +185,13 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={revenueData}>
+                <LineChart data={dashboardData?.revenueOverTime ?? []}>
                   <CartesianGrid
                     strokeDasharray="3 3"
                     stroke="hsl(var(--border))"
                   />
                   <XAxis
-                    dataKey="name"
+                    dataKey="month"
                     stroke="hsl(var(--muted-foreground))"
                     fontSize={12}
                   />
@@ -207,13 +227,13 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={userEventData}>
+                <BarChart data={dashboardData?.userEventStats ?? []}>
                   <CartesianGrid
                     strokeDasharray="3 3"
                     stroke="hsl(var(--border))"
                   />
                   <XAxis
-                    dataKey="name"
+                    dataKey="month"
                     stroke="hsl(var(--muted-foreground))"
                     fontSize={12}
                   />
