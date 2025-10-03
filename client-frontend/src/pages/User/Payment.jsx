@@ -172,6 +172,7 @@ const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
 
           // Update order 
           if (ticketData?.ticketId) {
+            console.log("Creating order record");
             const updateOrderRes = await fetch(`${orderServiceURL}`, {
               method: "POST",
               headers: {

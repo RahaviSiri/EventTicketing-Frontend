@@ -4,13 +4,16 @@ import { AppContext } from "../../context/AppContext";
 import Charts from "./Charts";
 import Graphs from "./Graphs";
 import { HeaderContext } from "../../context/HeaderContext";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const { userID } = useContext(AppContext);
   const [events, setEvents] = useState([]);
   const { api } = useContext(HeaderContext);
   const [revenue, setRevenue] = useState(0);
-  const [ ticketCount, setTicketCount ] = useState(0);
+  const [ticketCount, setTicketCount] = useState(0);
+  const [soldTicketsMap, setSoldTicketsMap] = useState({});
+  const navigate = useNavigate();
 
   const fetchEvents = async () => {
     if (!userID) return; // wait until userID is available
@@ -42,15 +45,36 @@ const Dashboard = () => {
     }
   };
 
-  const fetchTicketCount = async () => {
-    if (events.length === 0) return;
-
-    const ids = events.map((item) => item.event.id);
+  const fetchTicketCount = () => {
     try {
-      const count = await api.getEventsCountByEventIds(ids);
+      // soldTicketsMap is like { eventId: bookedSeatsCount }
+      // Object.values() returns an array of the values: [count1, count2, ...]
+      // Sum them up using reduce
+      // Sum starts from 0, and for each value, adds it to the sum
+      const count = Object.values(soldTicketsMap).reduce(
+        (sum, value) => sum + value,
+        0
+      );
       setTicketCount(count);
     } catch (error) {
-      console.error("Error fetching revenue by event IDs:", error);
+      console.error("Error calculating ticket count:", error);
+    }
+  };
+
+  const getTicketCountForEvent = async (eventId) => {
+    try {
+      const seating = await api.getSeatingByEvent(eventId);
+
+      // Parse layoutJson into a real object
+      const layout = JSON.parse(seating.layoutJson);
+
+      // Get booked seats
+      const bookedSeats = layout.seats.filter(seat => seat.status === "booked");
+
+      return bookedSeats.length;
+    } catch (error) {
+      console.error("Error getting ticket count:", error);
+      return 0;
     }
   };
 
@@ -59,11 +83,27 @@ const Dashboard = () => {
   }, [userID, api]);
 
   useEffect(() => {
-  if (events.length > 0) {
-    fetchRevenue();
-    fetchTicketCount();
-  }
-}, [events]);
+  fetchTicketCount();
+}, [soldTicketsMap]);
+
+  useEffect(() => {
+    if (events.length > 0) {
+      fetchRevenue();
+
+      // fetch sold tickets for each event
+      const loadSoldTickets = async () => {
+        const counts = {};
+        for (const item of events) {
+          const count = await getTicketCountForEvent(item.event.id);
+          counts[item.event.id] = count;
+        }
+        setSoldTicketsMap(counts);
+      };
+
+      loadSoldTickets();
+    }
+  }, [events, api]);
+
 
   // Earliest event for top card
   const upcomingEvents = events.filter(
@@ -118,7 +158,7 @@ const Dashboard = () => {
         <div className="bg-white rounded-2xl shadow p-6">
           <h3 className="text-lg font-semibold mb-4">📊 Sales Chart</h3>
           <div className="grid grid-cols-1 gap-6">
-            <Charts events={events} />
+            <Charts events={events} soldTicketsMap={soldTicketsMap} />
           </div>
         </div>
         <div className="bg-white rounded-2xl shadow p-6">
@@ -138,7 +178,8 @@ const Dashboard = () => {
               const evt = item.event;
               const venue = item.venue;
 
-              const sold = 0;
+              const sold = soldTicketsMap[evt.id] || 0;
+              console.log("Sold tickets for event", evt.id, ":", sold);
               const percentage = venue?.capacity
                 ? (sold / venue.capacity) * 100
                 : 0;
@@ -166,6 +207,7 @@ const Dashboard = () => {
                     <p className="text-sm mt-1 text-gray-600">
                       {sold}/{venue?.capacity ?? 0} tickets sold
                     </p>
+
                   </div>
 
                   {/* Actions */}
@@ -176,6 +218,7 @@ const Dashboard = () => {
                         borderColor: colors.primary,
                         color: colors.primary,
                       }}
+                      onClick={() => navigate('/organizers/orderDetails')}
                     >
                       View Attendees
                     </button>
