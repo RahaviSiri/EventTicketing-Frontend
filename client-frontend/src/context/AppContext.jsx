@@ -10,7 +10,7 @@ export const AppContextProvider = ({ children }) => {
     const paymentServiceURL = "http://localhost:8080/api/payments";
     const ticketServiceURL = "http://localhost:8080/api/tickets";
     const orderServiceURL = "http://localhost:8080/api/orders";
-
+    const notificationServiceURL = "http://localhost:8080/api/notifications";
 
     const [role, setRole] = useState(null);
     const [userID, setUserID] = useState();
@@ -88,7 +88,7 @@ export const AppContextProvider = ({ children }) => {
         paymentServiceURL,
         ticketServiceURL,
         orderServiceURL,
-
+        notificationServiceURL,
         
     };
 
