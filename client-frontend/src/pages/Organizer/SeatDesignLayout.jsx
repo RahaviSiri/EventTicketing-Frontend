@@ -146,6 +146,9 @@ const SeatDesignLayout = ({ onSave }) => {
       const seatsPerRow = 10;
       const spacing = 50;
 
+      let maxX = 0;
+      let maxY = 0;
+
       for (let i = 0; i < capacity; i++) {
         const x = 50 + (i % seatsPerRow) * spacing;
         const y = 80 + Math.floor(i / seatsPerRow) * spacing;
@@ -162,7 +165,15 @@ const SeatDesignLayout = ({ onSave }) => {
           y,
           status: "available",
         });
+
+        // track max size
+        maxX = Math.max(maxX, x + 50);
+        maxY = Math.max(maxY, y + 50);
       }
+
+      // update stage size so scroll works
+      stageRef.current.width(maxX);
+      stageRef.current.height(maxY);
 
       seatsDataRef.current = seats;
       seats.forEach(renderSeat);
@@ -256,8 +267,8 @@ const SeatDesignLayout = ({ onSave }) => {
 
       <div
         ref={containerRef}
-        className="border rounded shadow-md bg-white"
-        style={{ width: "100%", minHeight: "500px" }}
+        className="border rounded shadow-md bg-white overflow-auto"
+        style={{ width: "100%", minHeight: "500px" , position: "relative" }}
       />
 
       <button
