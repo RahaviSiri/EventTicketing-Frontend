@@ -20,6 +20,14 @@ const Events = () => {
   const { token } = useContext(AppContext);
 
   useEffect(() => {
+        window.scrollTo({
+          top: 0,
+          left: 0,
+          behavior: "smooth", // optional, for smooth scroll
+        });
+      }, [page, size, selectedCategory, searchTerm, events]);
+
+  useEffect(() => {
     const fetchEvents = async () => {
       if (!token) {
         setError("User not authenticated.");

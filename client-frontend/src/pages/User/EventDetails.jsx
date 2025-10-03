@@ -19,6 +19,14 @@ const EventDetail = () => {
   const [discounts, setDiscounts] = useState([]);
 
   useEffect(() => {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "smooth", // optional, for smooth scroll
+      });
+    }, [eventId]);
+
+  useEffect(() => {
     const fetchEvent = async () => {
       try {
         if (!token) throw new Error("No authentication token found.");

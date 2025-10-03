@@ -30,6 +30,14 @@ const EventsList = () => {
     const { api } = useContext(HeaderContext);
 
     useEffect(() => {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "smooth", // optional, for smooth scroll
+      });
+    }, [page, size, events]);
+
+    useEffect(() => {
         const fetchEvents = async () => {
             if (!userID) return; // wait until userID is available
             const id = parseInt(userID, 10);
