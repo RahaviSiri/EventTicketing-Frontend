@@ -139,10 +139,18 @@ export const HeaderProvider = ({ children }) => {
       });
       return res.json(); // will return a Page object
     },
-    getOrdersByUser: async (userId) => {
-      const res = await fetch(`${orderServiceURL}/user/${userId}`, {
+    getOrdersByUserOnlyByPage: async (userId, page = 0, size = 10) => {
+      const res = await fetch(`${orderServiceURL}/user/${userId}?page=${page}&size=${size}`, {
         headers: getHeaders(false),
       });
+      return res.json();
+    },
+    getOrdersByUser: async (userId, page = 0, size = 10, month, year) => {
+      let url = `${orderServiceURL}/user/${userId}?page=${page}&size=${size}`;
+      if (month !== undefined && year !== undefined) {
+        url += `&month=${month}&year=${year}`; // JS months are 0-11
+      }
+      const res = await fetch(url, { headers: getHeaders(false) });
       return res.json();
     },
 
@@ -172,6 +180,12 @@ export const HeaderProvider = ({ children }) => {
     },
     countTicketsByEvent: async (eventId) => {
       const res = await fetch(`${ticketServiceURL}/count/${eventId}`, {
+        headers: getHeaders(false),
+      });
+      return res.json();
+    },
+    getTicketById: async (id) => {
+      const res = await fetch(`${ticketServiceURL}/${id}`, {
         headers: getHeaders(false),
       });
       return res.json();

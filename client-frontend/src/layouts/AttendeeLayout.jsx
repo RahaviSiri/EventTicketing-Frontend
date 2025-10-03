@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import NavBar from "../components/NavBar.jsx";
 import Events from "../pages/User/Events.jsx";
@@ -14,6 +14,8 @@ import About from "../pages/User/About.jsx";
 import Slider_1 from "../components/UserComponents/Slider_1.jsx";
 import Slider_2 from "../components/UserComponents/Slider_2.jsx";
 import Footer from "../components/UserComponents/Footer.jsx";
+import MyBookings from "../pages/User/MyBookings.jsx";
+import colors from "../constants/colors.js";
 
 const AttendeeLayout = () => {
   const location = useLocation();
@@ -26,6 +28,26 @@ const AttendeeLayout = () => {
 
   const shouldShowNavBar = !hideNavBarRoutes.includes(location.pathname);
   const shouldHavePadding = !noPaddingRoutes.includes(location.pathname);
+
+  // State to show/hide scroll button
+  const [showScrollButton, setShowScrollButton] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowScrollButton(true);
+      } else {
+        setShowScrollButton(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <div className="flex flex-col ">
@@ -44,9 +66,20 @@ const AttendeeLayout = () => {
           <Route path="/events/:eventId/payment" element={<Payment />} />
           <Route path="/events/:eventId/success" element={<PaymentSuccess />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/mybookings" element={<MyBookings />} />
         </Routes>
       </main>
       <Footer/>
+      {/* Scroll to Top Button */}
+      {showScrollButton && (
+        <button
+          onClick={scrollToTop}
+          style={{backgroundColor: colors.secondary}}
+          className="w-10 h-10 fixed bottom-6 right-6 z-50 rounded-full shadow-lg transition text-center "
+        >
+          ↑
+        </button>
+      )}
     </div>
   );
 };
