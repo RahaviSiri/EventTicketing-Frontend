@@ -16,6 +16,8 @@ import Slider_2 from "../components/UserComponents/Slider_2.jsx";
 import Footer from "../components/UserComponents/Footer.jsx";
 import MyBookings from "../pages/User/MyBookings.jsx";
 import colors from "../constants/colors.js";
+import EmailVerify from "../components/EmailVerify.jsx";
+import ChangePassword from "../components/ChangePassword.jsx";
 
 const AttendeeLayout = () => {
   const location = useLocation();
@@ -67,6 +69,8 @@ const AttendeeLayout = () => {
           <Route path="/events/:eventId/success" element={<PaymentSuccess />} />
           <Route path="/login" element={<Login />} />
           <Route path="/mybookings" element={<MyBookings />} />
+          <Route  path="/verify-email" element={<EmailVerify/>}/>
+          <Route  path="/change-password" element={<ChangePassword/>}/>
         </Routes>
       </main>
       <Footer/>
