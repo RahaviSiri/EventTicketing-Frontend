@@ -2,8 +2,7 @@
 describe("Organizer System Test", () => {
     const email = "rahavi24siri@gmail.com";
     const password = "12345";
-    const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyYWhhdmkyNHNpcmlAZ21haWwuY29tIiwiaWF0IjoxNzU5Nzc2MDU3LCJleHAiOjE3NTk4NjI0NTd9.bVjmcFz1coxAhb-mOsIj1puhKPw1SjeXsOARRzj-AXc";
-
+    
     beforeEach(() => {
         cy.visit("/login");
         cy.get("input[name='email']").type(email);
