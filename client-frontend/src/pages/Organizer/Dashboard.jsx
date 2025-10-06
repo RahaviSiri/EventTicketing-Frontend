@@ -129,25 +129,25 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white rounded-2xl shadow p-4 text-center">
           <h3 className="text-lg font-semibold">Total Events</h3>
-          <p className="text-xl font-bold" style={{ color: colors.primary }}>
+          <p data-testid="total-events" className="text-xl font-bold" style={{ color: colors.primary }}>
             {events.length}
           </p>
         </div>
         <div className="bg-white rounded-2xl shadow p-4 text-center">
           <h3 className="text-lg font-semibold">Tickets Sold</h3>
-          <p className="text-xl font-bold" style={{ color: colors.primary }}>
+          <p data-testid="tickets-sold" className="text-xl font-bold" style={{ color: colors.primary }}>
             {ticketCount}
           </p>
         </div>
         <div className="bg-white rounded-2xl shadow p-4 text-center">
           <h3 className="text-lg font-semibold">Revenue</h3>
-          <p className="text-xl font-bold" style={{ color: colors.primary }}>
+          <p data-testid="revenue" className="text-xl font-bold" style={{ color: colors.primary }}>
             Rs {revenue}
           </p>
         </div>
         <div className="bg-white rounded-2xl shadow p-4 text-center">
           <h3 className="text-lg font-semibold">Upcoming Event</h3>
-          <p className="text-lg font-bold" style={{ color: colors.primary }}>
+          <p data-testid="upcoming-event" className="text-lg font-bold" style={{ color: colors.primary }}>
             {earliestEvent ? earliestEvent.event.name : "No events"}
           </p>
         </div>

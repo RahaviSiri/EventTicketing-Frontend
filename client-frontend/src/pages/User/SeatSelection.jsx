@@ -33,10 +33,10 @@ const SeatSelection = () => {
       seatInfo.status === "booked"
         ? "#FF0000"
         : seatInfo.status === "reserved"
-        ? "#A0A0A0"
-        : seatInfo.seatType === "VIP"
-        ? "#FFD700"
-        : colors.primary;
+          ? "#A0A0A0"
+          : seatInfo.seatType === "VIP"
+            ? "#FFD700"
+            : colors.primary;
 
     const seat = new Konva.Circle({
       x: seatInfo.x,
@@ -125,6 +125,9 @@ const SeatSelection = () => {
         stageRef.current = stage;
         layerRef.current = layer;
 
+        // Expose stageRef for Cypress AFTER creation
+        window.stageRef = stageRef.current;
+
         seats.forEach(renderSeat);
         layer.batchDraw();
       } catch (err) {
@@ -189,6 +192,7 @@ const SeatSelection = () => {
     }
   };
 
+
   return (
     <div className="max-w-7xl mx-auto p-6 grid lg:grid-cols-4 gap-8">
       {/* Seat Map */}
@@ -236,6 +240,7 @@ const SeatSelection = () => {
 
       {/* Sidebar */}
       <motion.div
+        data-testid="selection-sidebar"
         initial={{ opacity: 0, x: 40 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6 }}
