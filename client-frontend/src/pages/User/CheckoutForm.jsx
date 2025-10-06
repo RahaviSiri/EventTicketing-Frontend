@@ -98,10 +98,12 @@ export const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
         setError(null);
 
         // --- Stripe mock for Cypress tests ---
-        if (Cypress.env('TEST_MODE')) {
+        // --- Stripe mock for Cypress tests ---
+        if (typeof Cypress !== "undefined" && Cypress.env('TEST_MODE')) {
             stripe.confirmCardPayment = () =>
                 Promise.resolve({ paymentIntent: { status: 'succeeded' } });
         }
+
 
         console.log("Event ", event);
         console.log("Selected seats from Payment Page ", selectedSeats);
