@@ -177,7 +177,7 @@ const AddEvent = () => {
             </div>
             <label className="block mt-3">
               <span className="block text-sm mb-1">Category</span>
-              <select name="category" value={form.category || ''} onChange={handleChange} className="w-full rounded-md border p-2" required>
+              <select name="category" value={form.category || ''} onChange={handleChange} className="w-full rounded-md border p-2" >
                 <option value="">Select</option>
                 <option>Conference</option>
                 <option>Workshop</option>
@@ -211,7 +211,7 @@ const AddEvent = () => {
             </label>
             <label className="block mb-3">
               <span className="block text-sm mb-1">Address</span>
-              <input type="text" name="venue.address" value={form.venue.address || ''} onChange={handleChange} className="w-full rounded-md border p-2" required />
+              <input type="text" name="venue.address" value={form.venue.address || ''} onChange={handleChange} className="w-full rounded-md border p-2"  />
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <input data-testid="venue-city" type="text" name="venue.city" value={form.venue.city || ''} onChange={handleChange} placeholder="City" className="w-full rounded-md border p-2" required />

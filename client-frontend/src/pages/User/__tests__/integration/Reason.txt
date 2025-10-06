@@ -1,0 +1,6 @@
+Scope: Test component + API interaction or multiple components working together.
+
+How to set up:
+    Use Jest + React Testing Library.
+    Mock APIs with MSW (Mock Service Worker).
+    Test how components fetch and render data together.

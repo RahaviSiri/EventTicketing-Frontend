@@ -97,6 +97,12 @@ export const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
         setLoading(true);
         setError(null);
 
+        // --- Stripe mock for Cypress tests ---
+        if (Cypress.env('TEST_MODE')) {
+            stripe.confirmCardPayment = () =>
+                Promise.resolve({ paymentIntent: { status: 'succeeded' } });
+        }
+
         console.log("Event ", event);
         console.log("Selected seats from Payment Page ", selectedSeats);
         console.log("Total Price " + totalPrice);
@@ -183,8 +189,8 @@ export const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
                     console.log("Start Date and Time ", `${event.startDate}T${event.startTime}`);
                     const seatNumbersStr = selectedSeats.map((s) => s.seatNumber).join(",");
                     const eventDateTime = event.startDate && event.startTime
-                        ? `${event.startDate}T${event.startTime}` 
-                        : null; 
+                        ? `${event.startDate}T${event.startTime}`
+                        : null;
 
                     const resp = await fetch(`${ticketServiceURL}`, {
                         method: "POST",

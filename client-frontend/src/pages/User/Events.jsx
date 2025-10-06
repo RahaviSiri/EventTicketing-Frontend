@@ -155,6 +155,7 @@ const Events = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredEvents.map((event) => (
               <div
+                data-testid="event-card"
                 key={event.id}
                 className="rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow relative"
                 style={{ backgroundColor: colors.secondary }}

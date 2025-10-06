@@ -216,7 +216,7 @@ const SeatDesignLayout = ({ onSave }) => {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-2">Design Seating Layout</h1>
+      <h1 data-testid='seat-layout' className="text-2xl font-bold mb-2">Design Seating Layout</h1>
       <p className="text-gray-600 mb-6">Venue capacity: {capacity} seats</p>
 
       <div className="flex gap-4 mb-4">
