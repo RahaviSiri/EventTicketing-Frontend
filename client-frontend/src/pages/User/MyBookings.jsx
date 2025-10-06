@@ -106,7 +106,7 @@ const MyBookings = () => {
   // console.log('Fetching URL:', `${orderServiceURL}/user/${userID}?page=${currentPage}&size=10&month=${selectedMonth + 1}&year=${selectedYear}`);
 
   return (
-    <div onload="window.scrollTo(0, 0)" className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 bg-gray-50 min-h-screen">
       <h1 className="text-3xl font-bold mb-8" style={{ color: colors.primary }}>
         My Bookings
       </h1>
