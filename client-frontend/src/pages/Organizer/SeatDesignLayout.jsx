@@ -221,8 +221,9 @@ const SeatDesignLayout = ({ onSave }) => {
 
       <div className="flex gap-4 mb-4">
         <div>
-          <label className="font-medium mr-2">Seat Shape:</label>
+          <label htmlFor="seatShape" className="font-medium mr-2">Seat Shape:</label>
           <select
+            id="seatShape"
             value={shape}
             onChange={(e) => setShape(e.target.value)}
             className="border rounded-md p-2"
@@ -233,8 +234,9 @@ const SeatDesignLayout = ({ onSave }) => {
         </div>
 
         <div>
-          <label className="font-medium mr-2">Number of VIP Seats:</label>
+          <label htmlFor="vipSeats" className="font-medium mr-2">Number of VIP Seats:</label>
           <input
+            id="vipSeats"
             type="number"
             value={vipSeatsCount}
             onChange={(e) => setVipSeatsCount(Number(e.target.value))}
@@ -245,8 +247,9 @@ const SeatDesignLayout = ({ onSave }) => {
         </div>
 
         <div>
-          <label className="font-medium mr-2">VIP Price:</label>
+          <label htmlFor="vipPrice" className="font-medium mr-2">VIP Price:</label>
           <input
+            id="vipPrice"
             type="number"
             value={vipPrice}
             onChange={(e) => setVipPrice(Number(e.target.value))}
@@ -255,8 +258,9 @@ const SeatDesignLayout = ({ onSave }) => {
         </div>
 
         <div>
-          <label className="font-medium mr-2">Regular Price:</label>
+          <label htmlFor="regularPrice" className="font-medium mr-2">Regular Price:</label>
           <input
+            id="regularPrice"
             type="number"
             value={regularPrice}
             onChange={(e) => setRegularPrice(Number(e.target.value))}

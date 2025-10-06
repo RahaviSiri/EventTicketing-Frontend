@@ -214,7 +214,7 @@ const AddEvent = () => {
               <input type="text" name="venue.address" value={form.venue.address || ''} onChange={handleChange} className="w-full rounded-md border p-2" required />
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <input type="text" name="venue.city" value={form.venue.city || ''} onChange={handleChange} placeholder="City" className="w-full rounded-md border p-2" required />
+              <input data-testid="venue-city" type="text" name="venue.city" value={form.venue.city || ''} onChange={handleChange} placeholder="City" className="w-full rounded-md border p-2" required />
               <input type="text" name="venue.state" value={form.venue.state || ''} onChange={handleChange} placeholder="Province" className="w-full rounded-md border p-2" />
               <input type="text" name="venue.postalCode" value={form.venue.postalCode || ''} onChange={handleChange} placeholder="Postal Code" className="w-full rounded-md border p-2" />
               <input type="text" name="venue.country" value={form.venue.country || ''} onChange={handleChange} placeholder="Country" className="w-full rounded-md border p-2" />
