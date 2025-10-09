@@ -38,7 +38,7 @@ const Events = () => {
         setLoading(true);
         const data = await api.getAllEvents(page, size);
         console.log(data);
-        setTotalPages(data.totalPages);
+        setTotalPages(data.page.totalPages);
         const mappedData = data.content.map((ev) => {
           const eventDate = new Date(
             ev.startDate + "T" + (ev.startTime || "00:00")
@@ -166,6 +166,14 @@ const Events = () => {
                     style={{ backgroundColor: "red" }}
                   >
                     Expired
+                  </span>
+                )}
+                {!event.expired && (
+                  <span
+                    className="absolute top-2 left-2 px-2 py-1 text-xs font-bold text-white rounded"
+                    style={{ backgroundColor: "green" }}
+                  >
+                    Active
                   </span>
                 )}
                 <img

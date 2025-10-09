@@ -110,6 +110,7 @@ const ContactUs = () => {
               <Tag size={16} /> Subject
             </label>
             <input
+              required
               type="text"
               name="subject"
               value={formData.subject}

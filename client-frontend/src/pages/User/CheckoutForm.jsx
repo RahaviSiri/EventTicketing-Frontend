@@ -81,7 +81,7 @@ export const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
                     setFinalPrice(totalPrice);
                 }
             } else {
-                setError("Expired discount code.");
+                setError("Early or Expired discount code. Check the Date of validation of discount");
                 setAppliedDiscount(null);
                 setFinalPrice(totalPrice);
             }
@@ -97,7 +97,6 @@ export const CheckoutForm = ({ event, selectedSeats, totalPrice }) => {
         setLoading(true);
         setError(null);
 
-        // --- Stripe mock for Cypress tests ---
         // --- Stripe mock for Cypress tests ---
         if (typeof Cypress !== "undefined" && Cypress.env('TEST_MODE')) {
             stripe.confirmCardPayment = () =>
