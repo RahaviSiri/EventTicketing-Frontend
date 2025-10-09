@@ -1,16 +1,18 @@
 import React, { useContext, useEffect, useState } from "react";
 import colors from "../../constants/colors";
 import { useLocation, useNavigate } from "react-router-dom";
-import { AppContext } from "../../context/AppContext";
 import { HeaderContext } from "../../context/HeaderContext";
+import MonthlyRevenue from "./MonthlyRevenue";
+import { FaCalendarAlt, FaMapMarkerAlt, FaTag, FaClock, FaDollarSign, FaChair, FaInfoCircle} from "react-icons/fa";
 
 const EventDetailsPage = () => {
   const location = useLocation();
   const event = location.state?.event;
   const [seatingChart, setSeatingChart] = useState({});
   const [discounts, setDiscounts] = useState([]);
+  const [totalRevenue, setTotalRevenue] = useState(null);
+  const [annualRevenue, setAnnualRevenue] = useState([]); // Store revenue for each month of the year
   const { api } = useContext(HeaderContext);
-
   const navigate = useNavigate();
 
   if (!event) {
@@ -38,9 +40,30 @@ const EventDetailsPage = () => {
       }
     };
 
+    const fetchTotalRevenue = async () => {
+      try {
+        const data = await api.getRevenueByEvent(event.id);
+        console.log("Total Revenue: ", data);
+        setTotalRevenue(data);
+      } catch (err) {
+        console.error("Error fetching total revenue:", err);
+      }
+    };
+
+    const fetchMonthlyRevenue = async () => {
+      try {
+        const data = await api.getRevenueByEventForMonth(event.id, new Date().getFullYear());
+        setAnnualRevenue(data);
+      } catch (err) {
+        console.error("Error fetching monthly revenue:", err);
+      }
+    };
+
+    fetchTotalRevenue();
+    fetchMonthlyRevenue();
     fetchSeatingChart();
     fetchDiscounts();
-  }, [event]);
+  }, [event, api]);
 
   const formatDate = (dateStr) =>
     new Date(dateStr).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
@@ -85,8 +108,8 @@ const EventDetailsPage = () => {
 
       {/* Date & Time */}
       <section className="mb-7">
-        <h2 className="lg:text-xl font-semibold mb-3 border-b border-gray-200 pb-2 text-gray-800">
-          Date &amp; Time
+        <h2 className="lg:text-xl font-semibold mb-3 border-b border-gray-200 pb-2 text-gray-800 flex items-center gap-2">
+          <FaCalendarAlt style={{color : colors.primary}}/> Date &amp; <FaClock style={{color : colors.primary}}/> Time
         </h2>
         <p className="text-gray-600 text-sm lg:text-lg">
           {formatDate(event.startDate)} {formatTime(event.startTime)} — {formatDate(event.endDate)}{" "}
@@ -96,8 +119,8 @@ const EventDetailsPage = () => {
 
       {/* Venue */}
       <section className="mb-7">
-        <h2 className="lg:text-xl font-semibold mb-3 border-b border-gray-200 pb-2 text-gray-800">
-          Venue Details
+        <h2 className="lg:text-xl font-semibold mb-3 border-b border-gray-200 pb-2 text-gray-800 flex items-center gap-2">
+          <FaMapMarkerAlt style={{color : colors.primary}}/> Venue Details
         </h2>
         <p className="font-semibold text-gray-900 text-sm lg:text-lg">{event.venue.name}</p>
         <p className="text-gray-600 mb-1">
@@ -113,13 +136,29 @@ const EventDetailsPage = () => {
 
       {/* Description */}
       <section className="mb-7">
-        <h2 className="lg:text-xl font-semibold mb-3 border-b border-gray-200 pb-2 text-gray-800">Event Description</h2>
+        <h2 className="lg:text-xl font-semibold mb-3 border-b border-gray-200 pb-2 text-gray-800 flex items-center gap-2"><FaInfoCircle style={{color : colors.primary}}/>Event Description</h2>
         <p className="text-gray-700 whitespace-pre-line leading-relaxed">{event.description}</p>
+      </section>
+
+      {/* Revenue Section */}
+      <section className="mb-7">
+        <h2 className="lg:text-xl font-semibold mb-3 border-b border-gray-200 pb-2 text-gray-800 flex items-center gap-2">
+          <FaDollarSign style={{color : colors.primary}}/> Revenue Overview
+        </h2>
+        <div className="flex flex-col gap-4">
+          <div>
+            <h3 className="font-semibold text-gray-800">Total Revenue</h3>
+            <p className="text-gray-600 text-lg">{totalRevenue ? `$${totalRevenue}` : "Loading..."}</p>
+          </div>
+
+          {/* Monthly Revenue Chart */}
+          <MonthlyRevenue annualRevenue={annualRevenue} />
+        </div>
       </section>
 
       {/* Seating & Discount */}
       <section className="mb-7">
-        <h2 className="lg:text-xl font-semibold mb-3 border-b border-gray-200 pb-2 text-gray-800">Seating & Discounts</h2>
+        <h2 className="lg:text-xl font-semibold mb-3 border-b border-gray-200 pb-2 text-gray-800 flex items-center gap-2"><FaChair style={{color : colors.primary}}/> Seating & Discounts</h2>
 
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Seating Chart */}
@@ -169,7 +208,7 @@ const EventDetailsPage = () => {
           </div>
 
           {/* Discount Codes / Promo Cards */}
-          <div className="flex-1 border p-4 rounded-lg overflow-auto" style={{ minHeight: "400px"}}>
+          <div className="flex-1 border p-4 rounded-lg overflow-auto" style={{ minHeight: "400px" }}>
             <h3 className="font-semibold mb-3 text-gray-800">Discount Codes</h3>
 
             {Array.isArray(discounts) && discounts.length > 0 ? (

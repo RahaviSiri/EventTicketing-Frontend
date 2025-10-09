@@ -35,7 +35,7 @@ const OrderDetails = () => {
     try {
       const res = await api.getOrdersByEvent(eventID, page, size);
       if (res && Array.isArray(res.content)) {
-        console.log("res");
+        console.log(res);
         setOrders(res.content);
         setTotalPages(res.totalPages || 1);
       } else {
@@ -50,6 +50,8 @@ const OrderDetails = () => {
       setTotalPages(0);
     }
   };
+
+  console.log(orders);
 
   useEffect(() => {
     fetchEvents();
@@ -200,9 +202,9 @@ const OrderDetails = () => {
 
                 <td className="p-3">
                   {order.checkIn ? (
-                    <span className="text-green-600">✅ Checked-In</span>
+                    <span className="text-green-600">Checked-In</span>
                   ) : (
-                    <span className="text-red-500">❌ Not Checked-In</span>
+                    <span className="text-red-500">Not Checked-In</span>
                   )}
                 </td>
               </tr>

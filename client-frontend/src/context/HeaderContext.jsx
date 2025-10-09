@@ -178,6 +178,12 @@ export const HeaderProvider = ({ children }) => {
       });
       return res.json();
     },
+    getRevenueByEventForMonth: async (eventId, year) => {
+      const res = await fetch(`${ticketServiceURL}/revenue/event/${eventId}/year/${year}`, {
+        headers: getHeaders(false),
+      });
+      return res.json();
+    },
     countTicketsByEvent: async (eventId) => {
       const res = await fetch(`${ticketServiceURL}/count/${eventId}`, {
         headers: getHeaders(false),

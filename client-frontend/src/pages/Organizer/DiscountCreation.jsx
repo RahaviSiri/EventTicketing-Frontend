@@ -159,6 +159,7 @@ const DiscountCreation = () => {
             Discount Type:
           </label>
           <select
+            required
             name="discountType"
             value={discountData.discountType}
             onChange={handleChange}

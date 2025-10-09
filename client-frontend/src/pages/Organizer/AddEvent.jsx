@@ -136,11 +136,12 @@ const AddEvent = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="block">
                 <span className="block text-sm mb-1">Start Date</span>
-                <input type="date" name="startDate" value={form.startDate || ''} onChange={handleChange} className="w-full rounded-md border p-2" />
+                <input type="date" name="startDate" value={form.startDate || ''} onChange={handleChange} className="w-full rounded-md border p-2" required/>
               </label>
               <label className="block">
                 <span className="block text-sm mb-1">Start Time</span>
                 <input
+                  required
                   type="time"
                   name="startTime"
                   value={form.startTime || ""}
@@ -156,7 +157,7 @@ const AddEvent = () => {
               </label>
               <label className="block">
                 <span className="block text-sm mb-1">End Date</span>
-                <input type="date" name="endDate" value={form.endDate || ''} onChange={handleChange} className="w-full rounded-md border p-2" />
+                <input type="date" name="endDate" value={form.endDate || ''} onChange={handleChange} className="w-full rounded-md border p-2" required/>
               </label>
               <label className="block">
                 <span className="block text-sm mb-1">End Time</span>
@@ -167,6 +168,7 @@ const AddEvent = () => {
                   onChange={handleChange}
                   className="w-full rounded-md border p-2"
                   step="1"
+                  required
                 />
                 {form.endTime && (
                   <span className="text-xs text-gray-500 ml-2">
@@ -177,7 +179,7 @@ const AddEvent = () => {
             </div>
             <label className="block mt-3">
               <span className="block text-sm mb-1">Category</span>
-              <select name="category" value={form.category || ''} onChange={handleChange} className="w-full rounded-md border p-2" >
+              <select name="category" value={form.category || ''} onChange={handleChange} className="w-full rounded-md border p-2" required>
                 <option value="">Select</option>
                 <option>Conference</option>
                 <option>Workshop</option>
@@ -191,7 +193,7 @@ const AddEvent = () => {
             {/* Image upload */}
             <label className="block mt-3">
               <span className="block text-sm mb-1">Event Image</span>
-              <input type="file" accept="image/*" onChange={handleFileChange} className="w-full rounded-md border p-2" />
+              <input type="file" accept="image/*" onChange={handleFileChange} className="w-full rounded-md border p-2" required/>
               {imageFile ? (
                 <img src={URL.createObjectURL(imageFile)} alt="Preview" className="mt-2 w-32 h-32 object-cover" />
               ) : form.imageUrl ? (
@@ -211,16 +213,16 @@ const AddEvent = () => {
             </label>
             <label className="block mb-3">
               <span className="block text-sm mb-1">Address</span>
-              <input type="text" name="venue.address" value={form.venue.address || ''} onChange={handleChange} className="w-full rounded-md border p-2"  />
+              <input type="text" name="venue.address" value={form.venue.address || ''} onChange={handleChange} className="w-full rounded-md border p-2" required/>
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <input data-testid="venue-city" type="text" name="venue.city" value={form.venue.city || ''} onChange={handleChange} placeholder="City" className="w-full rounded-md border p-2" required />
-              <input type="text" name="venue.state" value={form.venue.state || ''} onChange={handleChange} placeholder="Province" className="w-full rounded-md border p-2" />
-              <input type="text" name="venue.postalCode" value={form.venue.postalCode || ''} onChange={handleChange} placeholder="Postal Code" className="w-full rounded-md border p-2" />
-              <input type="text" name="venue.country" value={form.venue.country || ''} onChange={handleChange} placeholder="Country" className="w-full rounded-md border p-2" />
-              <input type="number" name="venue.capacity" value={form.venue.capacity || ''} onChange={handleChange} placeholder="Capacity" className="w-full rounded-md border p-2" min={0} />
+              <input type="text" name="venue.state" value={form.venue.state || ''} onChange={handleChange} placeholder="Province" className="w-full rounded-md border p-2" required/>
+              <input type="text" name="venue.postalCode" value={form.venue.postalCode || ''} onChange={handleChange} placeholder="Postal Code" className="w-full rounded-md border p-2" required/>
+              <input type="text" name="venue.country" value={form.venue.country || ''} onChange={handleChange} placeholder="Country" className="w-full rounded-md border p-2" required/>
+              <input type="number" name="venue.capacity" value={form.venue.capacity || ''} onChange={handleChange} placeholder="Capacity" className="w-full rounded-md border p-2" min={0} required/>
             </div>
-            <textarea name="venue.description" value={form.venue.description || ''} onChange={handleChange} placeholder="Venue Description" className="w-full rounded-md border p-2 mt-3" rows={3} />
+            <textarea name="venue.description" value={form.venue.description || ''} onChange={handleChange} placeholder="Venue Description" className="w-full rounded-md border p-2 mt-3" rows={3} required/>
           </div>
         </section>
 

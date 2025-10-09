@@ -44,7 +44,7 @@ const EventsList = () => {
             try {
                 const data = await api.getEventsByOrganizerForPage(id, page, size);
                 setEvents(data.content);         // content = actual events
-                setTotalPages(data.totalPages);  // track total pages
+                setTotalPages(data.page.totalPages);  // track total pages
                 console.log("Fetched events:", data);
             } catch (error) {
                 console.error("Error fetching events:", error);
