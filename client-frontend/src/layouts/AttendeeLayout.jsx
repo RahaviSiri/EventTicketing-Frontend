@@ -23,7 +23,7 @@ const AttendeeLayout = () => {
   const location = useLocation();
 
   // Routes where NavBar should be hidden
-  const hideNavBarRoutes = ["/", "/slider_2", "/login"];
+  const hideNavBarRoutes = ["/", "/slider_2", "/login", "/verify-email", "/change-password"];
 
   // Routes where padding should be removed
   const noPaddingRoutes = ["/", "/slider_2", "/login", "/contact"];

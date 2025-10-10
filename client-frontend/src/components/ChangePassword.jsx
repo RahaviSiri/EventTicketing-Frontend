@@ -29,14 +29,14 @@ const ChangePassword = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          // Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ email, newPassword: password }),
       });
 
       if (response.ok) {
         setMessage("✅ Password changed successfully.");
-        setTimeout(() => navigate("/home"), 1000);
+        setTimeout(() => navigate("/login"), 1000);
       } else {
         setMessage("❌ Failed to change password. Try again.");
       }

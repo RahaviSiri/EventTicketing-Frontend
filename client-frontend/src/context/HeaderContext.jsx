@@ -153,7 +153,12 @@ export const HeaderProvider = ({ children }) => {
       const res = await fetch(url, { headers: getHeaders(false) });
       return res.json();
     },
-
+    updateOrderCheckIn: async (ticketId, checkIn) => {
+      return fetch(`${orderServiceURL}/${ticketId}/check-in/${checkIn}`, {
+        method: "PUT",
+        headers: getHeaders(false), 
+      });
+    },
     // ---------------- Tickets ----------------
     getRevenueByEventIds: async (ids) => {
       const res = await fetch(`${ticketServiceURL}/getRevenueByEvents`, {
@@ -196,6 +201,12 @@ export const HeaderProvider = ({ children }) => {
       });
       return res.json();
     },
+    getTicketByTicketNumber: async (ticketNumber) => {
+      const res = await fetch(`${ticketServiceURL}/ticket-number/${ticketNumber}`, {
+        headers: getHeaders(false),
+      });
+      return res.json();
+    }
   };
 
   return (
