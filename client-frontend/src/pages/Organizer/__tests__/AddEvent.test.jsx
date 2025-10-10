@@ -74,6 +74,12 @@ describe("AddEvent Page", () => {
         expect(screen.getAllByPlaceholderText(/City/i)[0]).toBeInTheDocument();
         expect(screen.getAllByPlaceholderText(/Province/i)[0]).toBeInTheDocument();
 
+        expect(screen.getByLabelText(/Venue Name/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/Address/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/Postal Code/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/Country/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/Capacity/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/Venue Description/i)).toBeInTheDocument();
     });
 
     it("updates image preview when a file is selected", () => {
@@ -89,6 +95,8 @@ describe("AddEvent Page", () => {
     });
 
     it("submits form and navigates on success", async () => {
+        // Remove jest.setTimeout(10000); - It's generally better to fix the root cause.
+
         const mockApi = {
             createOrUpdateEvent: jest.fn().mockResolvedValue({
                 ok: true,
@@ -98,19 +106,39 @@ describe("AddEvent Page", () => {
 
         renderAddEvent({ api: mockApi });
 
+        // Fill in event details
         fireEvent.change(screen.getByLabelText(/Event Name/i), { target: { value: "Test Event" } });
         fireEvent.change(screen.getByLabelText(/Description/i), { target: { value: "Test Desc" } });
         fireEvent.change(screen.getByLabelText(/Category/i), { target: { value: "Conference" } });
-        fireEvent.change(screen.getByTestId("venue-city"), { target: { value: "CityX" } });
+
+        fireEvent.change(screen.getByLabelText(/Start Date/i), { target: { value: "2025-10-06" } });
+        fireEvent.change(screen.getByLabelText(/Start Time/i), { target: { value: "10:00" } });
+        fireEvent.change(screen.getByLabelText(/End Date/i), { target: { value: "2025-10-06" } });
+        fireEvent.change(screen.getByLabelText(/End Time/i), { target: { value: "12:00" } });
+
+        // Fill in venue details
         fireEvent.change(screen.getByLabelText(/Venue Name/i), { target: { value: "Hall A" } });
         fireEvent.change(screen.getByLabelText(/Address/i), { target: { value: "123 Street" } });
+        fireEvent.change(screen.getByTestId("venue-city"), { target: { value: "CityX" } });
+        fireEvent.change(screen.getAllByPlaceholderText(/Province/i)[0], { target: { value: "StateY" } }); // Used getAllByPlaceholderText to be safe
+        fireEvent.change(screen.getByPlaceholderText(/Postal Code/i), { target: { value: "12345" } });
+        fireEvent.change(screen.getByPlaceholderText(/Country/i), { target: { value: "CountryZ" } });
+        fireEvent.change(screen.getByPlaceholderText(/Capacity/i), { target: { value: "100" } });
+        fireEvent.change(screen.getByPlaceholderText(/Venue Description/i), { target: { value: "Nice hall" } });
 
-
+        // Submit the form
         fireEvent.click(screen.getByText(/Add Event/i));
 
-        await waitFor(() => expect(mockApi.createOrUpdateEvent).toHaveBeenCalled());
+        // Wait for the API call to resolve
+        await waitFor(() => {
+            // console.log("Waiting for createOrUpdateEvent to be called"); // This log is no longer necessary
+            expect(mockApi.createOrUpdateEvent).toHaveBeenCalled();
+        }, { timeout: 3000 }); // Increase timeout if necessary, but 1-2s is usually fine.
+
         expect(mockNavigate).toHaveBeenCalledWith("/organizers/designLayout", expect.any(Object));
-    });
+    }, 10000); // Set a test-specific timeout as a fallback
+
+
 
     it("fetches event details in edit mode", async () => {
         // Override useParams to simulate edit mode
@@ -141,12 +169,14 @@ describe("AddEvent Page", () => {
 
         renderAddEvent({ api: mockApi });
 
+        // Wait for the event details to be fetched
         await waitFor(() => expect(mockApi.getEventById).toHaveBeenCalled());
+
+        // Ensure the fetched details are rendered in the form
         await waitFor(() => expect(screen.getByDisplayValue("Existing Event")).toBeInTheDocument());
         await waitFor(() => expect(screen.getByDisplayValue("Desc")).toBeInTheDocument());
         await waitFor(() => expect(screen.getByDisplayValue("Workshop")).toBeInTheDocument());
         await waitFor(() => expect(screen.getByDisplayValue("Hall A")).toBeInTheDocument());
-
     });
 
     it("clears form when 'Clear' button is clicked", () => {

@@ -12,7 +12,7 @@ test("renders events fetched from API", async () => {
     const fakeAPI = {
         getAllEvents: async () => ({
             content: [{ id: 1, name: "Concert" }],
-            totalPages: 1,
+            page : { totalPages: 1 },
         }),
     };
 

@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 describe("Full Event Booking Flow", () => {
     const email = "rahavi24siri@gmail.com";
-    const password = "12345";
+    const password = "123456";
     const eventId = 41;
 
     beforeEach(() => {
@@ -33,7 +33,7 @@ describe("Full Event Booking Flow", () => {
             .should('exist')
             .then((stage) => {
                 const layer = stage.getLayers()[0];
-                const seat = layer.findOne('.seat-S2');
+                const seat = layer.findOne('.seat-S3');
                 seat.fire('click');
             });
 

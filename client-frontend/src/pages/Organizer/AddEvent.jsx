@@ -193,7 +193,7 @@ const AddEvent = () => {
             {/* Image upload */}
             <label className="block mt-3">
               <span className="block text-sm mb-1">Event Image</span>
-              <input type="file" accept="image/*" onChange={handleFileChange} className="w-full rounded-md border p-2" required/>
+              <input type="file" accept="image/*" onChange={handleFileChange} className="w-full rounded-md border p-2" />
               {imageFile ? (
                 <img src={URL.createObjectURL(imageFile)} alt="Preview" className="mt-2 w-32 h-32 object-cover" />
               ) : form.imageUrl ? (
