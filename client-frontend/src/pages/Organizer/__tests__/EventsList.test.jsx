@@ -51,7 +51,7 @@ describe('EventsList Component', () => {
                     },
                 },
             ],
-            totalPages: 2,
+            page: { totalPages: 2, }
         });
         mockApi.deleteEvent.mockResolvedValue({});
     });
