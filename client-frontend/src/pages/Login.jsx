@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import colors from '../constants/colors';
 
@@ -52,7 +52,7 @@ const Login = () => {
                 className="relative max-w-md w-full backdrop-blur-xl shadow-2xl rounded-3xl p-8 sm:p-10 z-10"
             >
                 {/* Header */}
-                <h2 style={{color: colors.primary}} className="text-2xl sm:text-3xl font-bold mb-6 text-center">
+                <h2 style={{ color: colors.primary }} className="text-2xl sm:text-3xl font-bold mb-6 text-center">
                     {state === "Login" ? "Welcome Back!" : "Create Your Account"}
                 </h2>
 
@@ -103,27 +103,18 @@ const Login = () => {
                 </form>
 
                 {/* Divider */}
-                <div className="flex items-center my-6">
-                    <hr className="flex-grow border-t" />
-                    <span className="mx-4 text-sm font-extrabold">
-                        Or {state === "Sign Up" ? "Sign Up" : "Sign In"} with
-                    </span>
-                    <hr className="flex-grow border-t" />
-                </div>
-
-                {/* OAuth */}
-                <div className="flex justify-center space-x-4">
-                    <a
-                        href="http://localhost:8080/oauth2/authorization/google"
-                        className="flex items-center justify-center border border-gray-300 px-4 py-2 rounded-xl hover:bg-gray-100 transition"
-                    >
-                        <img
-                            src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_2013_Google.png"
-                            alt="Google"
-                            className="h-6 sm:h-5"
-                        />
-                    </a>
-                </div>
+                {state === "Login" && (
+                    <div className="flex items-center my-6">
+                        <hr className="flex-grow border-t" />
+                        <span className="mx-4 text-sm font-extrabold">
+                            Forgot Password?{" "}
+                            <Link className="text-blue-600 underline" to="/verify-email">
+                                Click Here
+                            </Link>
+                        </span>
+                        <hr className="flex-grow border-t" />
+                    </div>
+                )}
 
                 {/* Toggle Login / Sign Up */}
                 <p className="mt-6 text-sm text-center">

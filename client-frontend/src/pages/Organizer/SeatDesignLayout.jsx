@@ -146,6 +146,9 @@ const SeatDesignLayout = ({ onSave }) => {
       const seatsPerRow = 10;
       const spacing = 50;
 
+      let maxX = 0;
+      let maxY = 0;
+
       for (let i = 0; i < capacity; i++) {
         const x = 50 + (i % seatsPerRow) * spacing;
         const y = 80 + Math.floor(i / seatsPerRow) * spacing;
@@ -162,7 +165,15 @@ const SeatDesignLayout = ({ onSave }) => {
           y,
           status: "available",
         });
+
+        // track max size
+        maxX = Math.max(maxX, x + 50);
+        maxY = Math.max(maxY, y + 50);
       }
+
+      // update stage size so scroll works
+      stageRef.current.width(maxX);
+      stageRef.current.height(maxY);
 
       seatsDataRef.current = seats;
       seats.forEach(renderSeat);
@@ -205,13 +216,14 @@ const SeatDesignLayout = ({ onSave }) => {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-2">Design Seating Layout</h1>
+      <h1 data-testid='seat-layout' className="text-2xl font-bold mb-2">Design Seating Layout</h1>
       <p className="text-gray-600 mb-6">Venue capacity: {capacity} seats</p>
 
       <div className="flex gap-4 mb-4">
         <div>
-          <label className="font-medium mr-2">Seat Shape:</label>
+          <label htmlFor="seatShape" className="font-medium mr-2">Seat Shape:</label>
           <select
+            id="seatShape"
             value={shape}
             onChange={(e) => setShape(e.target.value)}
             className="border rounded-md p-2"
@@ -222,8 +234,9 @@ const SeatDesignLayout = ({ onSave }) => {
         </div>
 
         <div>
-          <label className="font-medium mr-2">Number of VIP Seats:</label>
+          <label htmlFor="vipSeats" className="font-medium mr-2">Number of VIP Seats:</label>
           <input
+            id="vipSeats"
             type="number"
             value={vipSeatsCount}
             onChange={(e) => setVipSeatsCount(Number(e.target.value))}
@@ -234,8 +247,9 @@ const SeatDesignLayout = ({ onSave }) => {
         </div>
 
         <div>
-          <label className="font-medium mr-2">VIP Price:</label>
+          <label htmlFor="vipPrice" className="font-medium mr-2">VIP Price:</label>
           <input
+            id="vipPrice"
             type="number"
             value={vipPrice}
             onChange={(e) => setVipPrice(Number(e.target.value))}
@@ -244,8 +258,9 @@ const SeatDesignLayout = ({ onSave }) => {
         </div>
 
         <div>
-          <label className="font-medium mr-2">Regular Price:</label>
+          <label htmlFor="regularPrice" className="font-medium mr-2">Regular Price:</label>
           <input
+            id="regularPrice"
             type="number"
             value={regularPrice}
             onChange={(e) => setRegularPrice(Number(e.target.value))}
@@ -256,8 +271,8 @@ const SeatDesignLayout = ({ onSave }) => {
 
       <div
         ref={containerRef}
-        className="border rounded shadow-md bg-white"
-        style={{ width: "100%", minHeight: "500px" }}
+        className="border rounded shadow-md bg-white overflow-auto"
+        style={{ width: "100%", minHeight: "500px" , position: "relative" }}
       />
 
       <button

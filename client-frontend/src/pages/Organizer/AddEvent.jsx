@@ -8,7 +8,7 @@ const AddEvent = () => {
   const navigate = useNavigate();
   const { id } = useParams(); // Get event ID from URL
   const isEditMode = Boolean(id); // Check if we are editing
-  const { userID,  } = useContext(AppContext);
+  const { userID, } = useContext(AppContext);
   const { api } = useContext(HeaderContext);
 
   const [form, setForm] = useState({
@@ -136,19 +136,45 @@ const AddEvent = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="block">
                 <span className="block text-sm mb-1">Start Date</span>
-                <input type="date" name="startDate" value={form.startDate || ''} onChange={handleChange} className="w-full rounded-md border p-2"  />
+                <input type="date" name="startDate" value={form.startDate || ''} onChange={handleChange} className="w-full rounded-md border p-2" required/>
               </label>
               <label className="block">
                 <span className="block text-sm mb-1">Start Time</span>
-                <input type="time" name="startTime" value={form.startTime || ''} onChange={handleChange} className="w-full rounded-md border p-2" step="1"  />
+                <input
+                  required
+                  type="time"
+                  name="startTime"
+                  value={form.startTime || ""}
+                  onChange={handleChange}
+                  className="w-full rounded-md border p-2"
+                  step="1"
+                />
+                {form.startTime && (
+                  <span className="text-xs text-gray-500 ml-2">
+                    {parseInt(form.startTime.split(":")[0]) >= 12 ? "PM" : "AM"}
+                  </span>
+                )}
               </label>
               <label className="block">
                 <span className="block text-sm mb-1">End Date</span>
-                <input type="date" name="endDate" value={form.endDate || ''} onChange={handleChange} className="w-full rounded-md border p-2"  />
+                <input type="date" name="endDate" value={form.endDate || ''} onChange={handleChange} className="w-full rounded-md border p-2" required/>
               </label>
               <label className="block">
                 <span className="block text-sm mb-1">End Time</span>
-                <input type="time" name="endTime" value={form.endTime || ''} onChange={handleChange} className="w-full rounded-md border p-2" step="1"  />
+                <input
+                  type="time"
+                  name="endTime"
+                  value={form.endTime || ""}
+                  onChange={handleChange}
+                  className="w-full rounded-md border p-2"
+                  step="1"
+                  required
+                />
+                {form.endTime && (
+                  <span className="text-xs text-gray-500 ml-2">
+                    {parseInt(form.endTime.split(":")[0]) >= 12 ? "PM" : "AM"}
+                  </span>
+                )}
               </label>
             </div>
             <label className="block mt-3">
@@ -187,16 +213,16 @@ const AddEvent = () => {
             </label>
             <label className="block mb-3">
               <span className="block text-sm mb-1">Address</span>
-              <input type="text" name="venue.address" value={form.venue.address || ''} onChange={handleChange} className="w-full rounded-md border p-2" required />
+              <input type="text" name="venue.address" value={form.venue.address || ''} onChange={handleChange} className="w-full rounded-md border p-2" required/>
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <input type="text" name="venue.city" value={form.venue.city || ''} onChange={handleChange} placeholder="City" className="w-full rounded-md border p-2" required />
-              <input type="text" name="venue.state" value={form.venue.state || ''} onChange={handleChange} placeholder="State" className="w-full rounded-md border p-2" />
-              <input type="text" name="venue.postalCode" value={form.venue.postalCode || ''} onChange={handleChange} placeholder="Postal Code" className="w-full rounded-md border p-2" />
-              <input type="text" name="venue.country" value={form.venue.country || ''} onChange={handleChange} placeholder="Country" className="w-full rounded-md border p-2" />
-              <input type="number" name="venue.capacity" value={form.venue.capacity || ''} onChange={handleChange} placeholder="Capacity" className="w-full rounded-md border p-2" min={0} />
+              <input data-testid="venue-city" type="text" name="venue.city" value={form.venue.city || ''} onChange={handleChange} placeholder="City" className="w-full rounded-md border p-2" required />
+              <input type="text" name="venue.state" value={form.venue.state || ''} onChange={handleChange} placeholder="Province" className="w-full rounded-md border p-2" required/>
+              <input type="text" name="venue.postalCode" value={form.venue.postalCode || ''} onChange={handleChange} placeholder="Postal Code" className="w-full rounded-md border p-2" required/>
+              <input type="text" name="venue.country" value={form.venue.country || ''} onChange={handleChange} placeholder="Country" className="w-full rounded-md border p-2" required/>
+              <input type="number" name="venue.capacity" value={form.venue.capacity || ''} onChange={handleChange} placeholder="Capacity" className="w-full rounded-md border p-2" min={0} required/>
             </div>
-            <textarea name="venue.description" value={form.venue.description || ''} onChange={handleChange} placeholder="Venue Description" className="w-full rounded-md border p-2 mt-3" rows={3} />
+            <textarea name="venue.description" value={form.venue.description || ''} onChange={handleChange} placeholder="Venue Description" className="w-full rounded-md border p-2 mt-3" rows={3} required/>
           </div>
         </section>
 
@@ -233,7 +259,7 @@ const AddEvent = () => {
 
           <button
             type="submit"
-            style={{backgroundColor: `${colors.primary}`}}
+            style={{ backgroundColor: `${colors.primary}` }}
             className="px-4 py-2 rounded-md text-white"
           >
             {isEditMode ? "Update Event" : "Add Event"}

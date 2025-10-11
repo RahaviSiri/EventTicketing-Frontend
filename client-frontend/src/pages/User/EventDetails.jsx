@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { Calendar, MapPin, Users, Clock, Star } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, Star, Tag } from "lucide-react";
 import { AppContext } from "../../context/AppContext";
 import { color } from "framer-motion";
 import colors from "../../constants/colors";
@@ -15,7 +15,16 @@ const EventDetail = () => {
   const [loadingEvent, setLoadingEvent] = useState(true);
   const [loadingSeats, setLoadingSeats] = useState(true);
   const [error, setError] = useState(null);
-  const { eventServiceURL, token, seatingServiceURL } = useContext(AppContext);
+  const { eventServiceURL, token, seatingServiceURL, discountServiceURL } = useContext(AppContext);
+  const [discounts, setDiscounts] = useState([]);
+
+  useEffect(() => {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "smooth", // optional, for smooth scroll
+      });
+    }, [eventId]);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -76,6 +85,28 @@ const EventDetail = () => {
 
     fetchSeatLayout();
   }, [event]);
+
+  const fetchDiscounts = async () => {
+    if (!eventId) return;
+    console.log("Fetching discounts for event:", eventId);
+    try {
+      const res = await fetch(`${discountServiceURL}/event/${eventId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch discounts");
+      const data = await res.json();
+      setDiscounts(data || []);
+    } catch (err) {
+      console.error("Error fetching discounts:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchDiscounts();
+  }, [eventId]);
+
+  console.log("Fetching discounts for event:", discounts);
+
   const handleBookNow = () => {
     navigate(`/events/${eventId}/seats`, { state: { event } });
   };
@@ -183,9 +214,8 @@ const EventDetail = () => {
                   />
                 }
                 title="Start Date"
-                value={`${new Date(event.startDate).toLocaleDateString()} • ${
-                  event.startTime
-                }`}
+                value={`${new Date(event.startDate).toLocaleDateString()} • ${event.startTime
+                  }`}
               />
               {event.endDate && (
                 <DetailCard
@@ -196,9 +226,8 @@ const EventDetail = () => {
                     />
                   }
                   title="End Date"
-                  value={`${new Date(event.endDate).toLocaleDateString()} • ${
-                    event.endTime
-                  }`}
+                  value={`${new Date(event.endDate).toLocaleDateString()} • ${event.endTime
+                    }`}
                 />
               )}
               <DetailCard
@@ -259,6 +288,25 @@ const EventDetail = () => {
                 <p className="text-gray-600">Normal ticket</p>
               </div>
             </div>
+
+            {/* 🔹 Show available discounts */}
+            {discounts.length > 0 && (
+              <div style={{color: colors.primary}} className="flex flex-col gap-3">
+                <p className="font-semibold mb-2 flex items-center gap-1">
+                  <Tag size={18} /> Available Discounts
+                </p>
+                <div className="flex gap-3 flex-wrap">
+                  {discounts.map((d, idx) => (
+                    <img
+                      key={idx}
+                      src={d.imageURL}
+                      alt={d.code}
+                      className="w-full object-cover rounded shadow"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="space-y-3">
               <div className="flex justify-between text-sm font-medium">

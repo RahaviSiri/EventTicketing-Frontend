@@ -9,7 +9,7 @@ import colors from "../../constants/colors";
 const PaymentSuccess = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { event, selectedSeats, totalPrice, seatDetails ,ticketData} = location.state || {};
+  const { event, selectedSeats, finalPrice, seatDetails, ticketData } = location.state || {};
   const qrRef = useRef();
 
   useEffect(() => {
@@ -20,12 +20,12 @@ const PaymentSuccess = () => {
     if (!event) return;
 
     let qrDataUrl = "";
-if (ticketData?.qrCode) {
-  qrDataUrl = `data:image/png;base64,${ticketData.qrCode}`;
-} else if (qrRef.current) {
-  const canvas = qrRef.current.querySelector("canvas");
-  if (canvas) qrDataUrl = canvas.toDataURL();
-}
+    if (ticketData?.qrCode) {
+      qrDataUrl = `data:image/png;base64,${ticketData.qrCode}`;
+    } else if (qrRef.current) {
+      const canvas = qrRef.current.querySelector("canvas");
+      if (canvas) qrDataUrl = canvas.toDataURL();
+    }
     const doc = new jsPDF();
     doc.setFontSize(20);
     doc.text("E-Ticket", 105, 20, { align: "center" });
@@ -43,14 +43,10 @@ if (ticketData?.qrCode) {
       doc.text(`- ${s.seatNumber} (${s.seatType}): Rs.${s.price}`, 30, yPos);
     });
 
-    doc.text(`Total Paid: Rs.${totalPrice}`, 20, yPos + 12);
+    doc.text(`Total Paid: Rs.${finalPrice}`, 20, yPos + 12);
 
     if (qrDataUrl) doc.addImage(qrDataUrl, "PNG", 140, 40, 50, 50);
     doc.save("ticket.pdf");
-  };
-
-  const sendConfirmationEmail = () => {
-    alert("Confirmation email sent!");
   };
 
   if (!event) {
@@ -60,6 +56,9 @@ if (ticketData?.qrCode) {
       </div>
     );
   }
+  const eventDateTime = event.startDate && event.startTime
+    ? `${event.startDate}T${event.startTime}`
+    : null;
 
   return (
     <div className="min-h-screen bg-gray-100 py-10">
@@ -86,7 +85,7 @@ if (ticketData?.qrCode) {
           <div className="p-6 space-y-4">
             <h2 className="text-2xl font-bold text-gray-900">{event.name}</h2>
             <div className="flex items-center gap-2 text-gray-600">
-              <Calendar size={16} /> <span>{new Date(event.startDate).toLocaleString()}</span>
+              <Calendar size={16} /> <span>{eventDateTime}</span>
             </div>
             <div className="flex items-center gap-2 text-gray-600">
               <MapPin size={16} /> <span>{event.venue?.name || "N/A"}, {event.venue?.city || "N/A"}</span>
@@ -102,9 +101,9 @@ if (ticketData?.qrCode) {
               ))}
             </div>
 
-            <div style={{color : colors.primary}} className="flex justify-between mt-4 font-bold text-lg">
+            <div style={{ color: colors.primary }} className="flex justify-between mt-4 font-bold text-lg">
               <span>Total Paid</span>
-              <span>Rs.{totalPrice}</span>
+              <span>Rs.{finalPrice}</span>
             </div>
           </div>
         </div>
@@ -116,17 +115,17 @@ if (ticketData?.qrCode) {
           </h3>
           <div ref={qrRef} className="p-4 bg-gray-50 rounded-lg">
             {ticketData?.qrCode ? (
-          <img
-            src={`data:image/png;base64,${ticketData.qrCode}`}
-            alt="Ticket QR Code"
-            className="w-44 h-44"
-          />
-        ) : (
-          <QRCodeCanvas
-            value={JSON.stringify({ eventId: event.id, seats: selectedSeats, totalPrice })}
-            size={180}
-          />
-        )}
+              <img
+                src={`data:image/png;base64,${ticketData.qrCode}`}
+                alt="Ticket QR Code"
+                className="w-44 h-44"
+              />
+            ) : (
+              <QRCodeCanvas
+                value={JSON.stringify({ eventId: event.id, seats: selectedSeats, finalPrice })}
+                size={180}
+              />
+            )}
           </div>
           <p className="text-sm text-gray-500 text-center">
             Show this QR code at the event entrance
@@ -134,13 +133,13 @@ if (ticketData?.qrCode) {
 
           <button
             onClick={downloadTicket}
-            style={{backgroundColor : colors.primary}}
+            style={{ backgroundColor: colors.primary }}
             className="w-full text-white py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
           >
             <Download size={16} /> Download Ticket
           </button>
 
-       
+
 
           <Link
             to="/events"

@@ -54,6 +54,11 @@ const Footer = () => {
                 Contact
               </a>
             </li>
+            <li>
+              <a href="/verify-email" className="hover:text-[var(--accent)]">
+                Change Password
+              </a>
+            </li>
           </ul>
         </div>
 

@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, User, MessageCircle, Send, Tag, X } from "lucide-react";
 import emailjs from "@emailjs/browser";
 import colors from "../../constants/colors";
+import { AppContext } from "../../context/AppContext";
 
 const ContactUs = () => {
   const [formData, setFormData] = useState({
@@ -13,6 +14,8 @@ const ContactUs = () => {
   });
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ type: "", message: "", visible: false });
+  const { token, notificationServiceURL } = useContext(AppContext);
+  // console.log("Auth Token:", token);
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -26,23 +29,28 @@ const ContactUs = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const templateParams = { ...formData, time: new Date().toLocaleString() };
+      const response = await fetch(`${notificationServiceURL}/contact`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
 
-      await emailjs.send(
-        "service_vyq9bzm",
-        "template_7k3y9jd",
-        templateParams,
-        "029ATmoVVrAyg0Gp1"
-      );
-
-      showToast("success", "Your message has been sent successfully!");
-      setFormData({ name: "", email: "", subject: "", message: "" });
+      if (!response.ok) {
+        throw new Error("Failed to send message");
+      } else {
+        showToast("success", "Your message has been sent successfully!");
+        setFormData({ name: "", email: "", subject: "", message: "" });
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Error " + err.message);
       showToast("error", "Failed to send message. Please try again later.");
     }
     setLoading(false);
   };
+
 
   return (
     <div
@@ -102,6 +110,7 @@ const ContactUs = () => {
               <Tag size={16} /> Subject
             </label>
             <input
+              required
               type="text"
               name="subject"
               value={formData.subject}

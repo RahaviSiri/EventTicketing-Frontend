@@ -20,41 +20,23 @@ const SeatSelection = () => {
   const seatsDataRef = useRef([]);
 
   const [selectedSeats, setSelectedSeats] = useState([]);
-  const [reservedSeats, setReservedSeats] = useState([]); // keeps all successfully reserved seats
   const [vipPrice, setVipPrice] = useState(0);
   const [normalPrice, setNormalPrice] = useState(0);
 
-  // --- Initialize Konva stage & layer ---
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const stage = new Konva.Stage({
-      container: containerRef.current,
-      width: containerRef.current.offsetWidth || window.innerWidth * 0.8,
-      height: containerRef.current.offsetHeight || 500,
-    });
-    stageRef.current = stage;
-
-    const layer = new Konva.Layer({ listening: true });
-    stage.add(layer);
-    layerRef.current = layer;
-
-    return () => stage.destroy();
-  }, []);
-
   // --- Render single seat ---
   const renderSeat = (seatInfo) => {
-    const isSelected = selectedSeats.some((s) => s.seatNumber === seatInfo.seatNumber);
+    const isSelected = selectedSeats.some(
+      (s) => s.seatNumber === seatInfo.seatNumber
+    );
 
     const fillColor =
       seatInfo.status === "booked"
         ? "#FF0000"
         : seatInfo.status === "reserved"
-        ? "#A0A0A0"
-        : seatInfo.seatType === "VIP"
-        ? "#FFD700"
-        : colors.primary;
-    // console.log('colors.primary =', colors.primary);
+          ? "#A0A0A0"
+          : seatInfo.seatType === "VIP"
+            ? "#FFD700"
+            : colors.primary;
 
     const seat = new Konva.Circle({
       x: seatInfo.x,
@@ -73,15 +55,14 @@ const SeatSelection = () => {
       fontSize: 12,
       fontFamily: "Arial",
       fill: "black",
-      listening: false, // Edited
+      listening: false,
     });
 
     layerRef.current.add(seat);
     layerRef.current.add(seatText);
 
     seat.on("click tap", () => {
-      console.log("Seat clicked ", seatInfo.seatNumber);
-      if (seatInfo.status === "booked" ) return;
+      if (seatInfo.status === "booked") return;
 
       setSelectedSeats((prev) => {
         const isAlreadySelected = prev.some(
@@ -99,13 +80,13 @@ const SeatSelection = () => {
           seat.strokeWidth(3);
         }
 
-        layerRef.current.draw();
+        layerRef.current.batchDraw();
         return updated;
       });
     });
   };
 
-  // --- Fetch seating layout ---
+  // --- Fetch seating layout & initialize stage ---
   useEffect(() => {
     const fetchLayout = async () => {
       if (!eventId) return;
@@ -119,21 +100,36 @@ const SeatSelection = () => {
 
         const data = await res.json();
         const seats = data.layoutJson ? JSON.parse(data.layoutJson).seats : [];
-        console.log(  "Seats from Seat Selection Page " ,seats);
         seatsDataRef.current = seats;
 
         const vipSeats = seats.filter((s) => s.seatType === "VIP");
-        console.log("VIP Seats ", vipSeats);
         const normalSeats = seats.filter(
           (s) => s.seatType !== "VIP" && s.status !== "booked"
         );
-        console.log("Normal Seats ", normalSeats);
         if (vipSeats.length > 0) setVipPrice(vipSeats[0].price);
         if (normalSeats.length > 0) setNormalPrice(normalSeats[0].price);
 
+        // --- Calculate Stage size based on seats ---
+        const maxX = seats.length > 0 ? Math.max(...seats.map((s) => s.x)) + 50 : 2000;
+        const maxY = seats.length > 0 ? Math.max(...seats.map((s) => s.y)) + 50 : 1500;
+
+        const stage = new Konva.Stage({
+          container: containerRef.current,
+          width: maxX,
+          height: maxY,
+          draggable: true,
+        });
+
+        const layer = new Konva.Layer();
+        stage.add(layer);
+        stageRef.current = stage;
+        layerRef.current = layer;
+
+        // Expose stageRef for Cypress AFTER creation
+        window.stageRef = stageRef.current;
+
         seats.forEach(renderSeat);
-        layerRef.current.batchDraw(); // Edited
-        // layerRef.current.draw();
+        layer.batchDraw();
       } catch (err) {
         console.error(err);
       }
@@ -141,63 +137,61 @@ const SeatSelection = () => {
 
     fetchLayout();
   }, [eventId, token]);
-  console.log("VIP Seats Price ", vipPrice);
-  console.log("Normal Seats Price ", normalPrice);
 
-  const totalPrice = selectedSeats.reduce((total, seat) => total + seat.price, 0);
-  console.log("Selected Seats ", selectedSeats);
+  const totalPrice = selectedSeats.reduce(
+    (total, seat) => total + seat.price,
+    0
+  );
 
   // --- Handle Booking ---
-const handleBooking = async () => {
-  if (selectedSeats.length === 0) {
-    alert("Please select at least one seat");
-    return;
-  }
-
-  const seatNumbers = selectedSeats.map((s) => s.seatNumber);
-  console.log("Seat Numbers for Booking " , seatNumbers);
-
-  try {
-    const res = await fetch(`${seatingServiceURL}/${eventId}/reserve`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ seatNumbers }),
-    });
-
-    const data = await res.json();
-    console.log(data);
-
-    if (!data.success && data.unavailableSeats?.length > 0) {
-      // Show unavailable seats to the user
-      const failNumbers = data.unavailableSeats.join(", ");
-      alert(`Some seats could not be reserved: ${failNumbers}. Please select other seats.`);
-
-      // Keep only the unavailable seats selected so user can reselect
-      const failedSeats = selectedSeats.filter(s =>
-        data.unavailableSeats.includes(s.seatNumber)
-      );
-      setSelectedSeats(failedSeats);
-    } else {
-      // All seats successfully reserved, navigate to payment
-      const allReservedSeats = [...selectedSeats]; // all selected are now reserved
-      const totalPrice = allReservedSeats.reduce(
-        (total, seat) => total + seat.price,
-        0
-      );
-      navigate(`/events/${eventId}/payment`, {
-        state: { event, selectedSeats: allReservedSeats, totalPrice },
-      });
+  const handleBooking = async () => {
+    if (selectedSeats.length === 0) {
+      alert("Please select at least one seat");
+      return;
     }
 
-    layerRef.current.draw();
-  } catch (err) {
-    console.error(err);
-    alert("Reservation failed. Please try again.");
-  }
-};
+    const seatNumbers = selectedSeats.map((s) => s.seatNumber);
+
+    try {
+      const res = await fetch(`${seatingServiceURL}/${eventId}/reserve`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ seatNumbers }),
+      });
+
+      const data = await res.json();
+
+      if (!data.success && data.unavailableSeats?.length > 0) {
+        const failNumbers = data.unavailableSeats.join(", ");
+        alert(
+          `Some seats could not be reserved: ${failNumbers}. Please select other seats.`
+        );
+
+        const failedSeats = selectedSeats.filter((s) =>
+          data.unavailableSeats.includes(s.seatNumber)
+        );
+        setSelectedSeats(failedSeats);
+      } else {
+        const allReservedSeats = [...selectedSeats];
+        const totalPrice = allReservedSeats.reduce(
+          (total, seat) => total + seat.price,
+          0
+        );
+        navigate(`/events/${eventId}/payment`, {
+          state: { event, selectedSeats: allReservedSeats, totalPrice },
+        });
+      }
+
+      layerRef.current.batchDraw();
+    } catch (err) {
+      console.error(err);
+      alert("Reservation failed. Please try again.");
+    }
+  };
+
 
   return (
     <div className="max-w-7xl mx-auto p-6 grid lg:grid-cols-4 gap-8">
@@ -214,8 +208,8 @@ const handleBooking = async () => {
 
         <div
           ref={containerRef}
-          className="border rounded-xl shadow-inner bg-gray-50"
-          style={{ width: "100%", minHeight: "500px" }}
+          className="border rounded-xl shadow-inner bg-gray-50 overflow-auto"
+          style={{ width: "100%", height: "500px", position: "relative" }}
         />
 
         {/* Legend */}
@@ -227,7 +221,10 @@ const handleBooking = async () => {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div style={{backgroundColor : colors.primary}} className="w-5 h-5 rounded-full"></div>
+            <div
+              style={{ backgroundColor: colors.primary }}
+              className="w-5 h-5 rounded-full"
+            ></div>
             <span className="text-gray-700">Normal: Rs.{normalPrice}</span>
           </div>
           <div className="flex items-center gap-2">
@@ -243,6 +240,7 @@ const handleBooking = async () => {
 
       {/* Sidebar */}
       <motion.div
+        data-testid="selection-sidebar"
         initial={{ opacity: 0, x: 40 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6 }}
@@ -277,7 +275,7 @@ const handleBooking = async () => {
 
         <button
           onClick={handleBooking}
-          style={{backgroundColor : colors.primary}}
+          style={{ backgroundColor: colors.primary }}
           className="w-full text-white px-5 py-3 rounded-xl shadow  transition-all duration-200 mt-6"
         >
           Confirm Booking ({selectedSeats.length})
