@@ -38,43 +38,76 @@ export default function UserManagement() {
   const filterButtons = ["Organizers", "Events", "PendingEvents"];
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem("AdminToken");
-        if (!token) return;
-
-        let endpoint = "";
-        if (activeFilter === "Organizers") {
-          endpoint = `${API_BASE_URL}/userManagement/organizers?page=${
-            currentPage - 1
-          }&size=${itemsPerPage}`;
-        } else if (activeFilter === "Events") {
-          endpoint = `${API_BASE_URL}/userManagement/events?page=${
-            currentPage - 1
-          }&size=${itemsPerPage}`;
-        } else if (activeFilter === "PendingEvents") {
-          endpoint = `${API_BASE_URL}/userManagement/pendingEvents?page=${
-            currentPage - 1
-          }&size=${itemsPerPage}`;
-        }
-
-        const response = await axios.get(endpoint, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        setData(response.data.content || []);
-        setTotalElements(response.data.totalElements || 0);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        if (error.response?.status === 401) {
-          alert("Session expired. Please log in again.");
-          window.location.href = "/admin-login";
-        }
-      }
-    };
-
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeFilter, currentPage]);
+
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem("AdminToken");
+      if (!token) return;
+
+      let endpoint = "";
+      if (activeFilter === "Organizers") {
+        endpoint = `${API_BASE_URL}/userManagement/organizers?page=${
+          currentPage - 1
+        }&size=${itemsPerPage}`;
+      } else if (activeFilter === "Events") {
+        endpoint = `${API_BASE_URL}/userManagement/events?page=${
+          currentPage - 1
+        }&size=${itemsPerPage}`;
+      } else if (activeFilter === "PendingEvents") {
+        endpoint = `${API_BASE_URL}/userManagement/pendingEvents?page=${
+          currentPage - 1
+        }&size=${itemsPerPage}`;
+      }
+
+      const response = await axios.get(endpoint, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setData(response.data.content || []);
+      setTotalElements(response.data.totalElements || 0);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      if (error.response?.status === 401) {
+        alert("Session expired. Please log in again.");
+        window.location.href = "/admin-login";
+      }
+    }
+  };
+
+  const handleActionClick = async (action, eventId) => {
+    const token = localStorage.getItem("AdminToken");
+    if (!token) {
+      alert("Session expired. Please log in again.");
+      window.location.href = "/admin-login";
+      return;
+    }
+
+    try {
+      let url = "";
+      if (action === "Approve") {
+        url = `${API_BASE_URL}/events/${eventId}/approve`;
+      } else if (action === "Reject") {
+        url = `${API_BASE_URL}/events/${eventId}/reject`;
+      }
+
+      if (!url) return;
+
+      await axios.put(
+        url,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      alert(`Event ${action.toLowerCase()}d successfully.`);
+      fetchData(); // Refresh the table after update
+    } catch (error) {
+      console.error(`Error trying to ${action.toLowerCase()} event:`, error);
+      alert(`Failed to ${action.toLowerCase()} event.`);
+    }
+  };
 
   const filteredData = data.filter((item) => {
     const query = searchQuery.toLowerCase();
@@ -113,9 +146,21 @@ export default function UserManagement() {
             Pending
           </Badge>
         );
-      case "CANCELLED":
+      case "APPROVED":
+        return (
+          <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+            Approved
+          </Badge>
+        );
+      case "REJECTED":
         return (
           <Badge className="bg-red-100 text-red-800 border-red-200">
+            Rejected
+          </Badge>
+        );
+      case "CANCELLED":
+        return (
+          <Badge className="bg-gray-100 text-gray-700 border-gray-200">
             Cancelled
           </Badge>
         );
@@ -124,10 +169,6 @@ export default function UserManagement() {
           <Badge className="border-gray-300 text-gray-700">{status}</Badge>
         );
     }
-  };
-
-  const handleActionClick = (action, itemId) => {
-    console.log(`${action} clicked for item ${itemId}`);
   };
 
   const renderTableHeaders = () => {
@@ -146,7 +187,7 @@ export default function UserManagement() {
         <TableRow className="bg-gray-50">
           <TableHead>Event ID</TableHead>
           <TableHead>Event Name</TableHead>
-          <TableHead>Organizer ID</TableHead> {/* New column */}
+          <TableHead>Organizer ID</TableHead>
           <TableHead>Organizer Name</TableHead>
           <TableHead>Organizer Email</TableHead>
           <TableHead>Status</TableHead>
@@ -186,7 +227,7 @@ export default function UserManagement() {
           <>
             <TableCell>{item.id}</TableCell>
             <TableCell>{item.eventName}</TableCell>
-            <TableCell>{item.organizerId ?? "N/A"}</TableCell> {/* New field */}
+            <TableCell>{item.organizerId ?? "N/A"}</TableCell>
             <TableCell>{item.organizerName ?? "N/A"}</TableCell>
             <TableCell>{item.organizerEmail ?? "N/A"}</TableCell>
             <TableCell>{getStatusBadge(item.status)}</TableCell>
@@ -208,6 +249,7 @@ export default function UserManagement() {
                     <Eye className="mr-2 h-4 w-4" />
                     View Event
                   </DropdownMenuItem>
+
                   {item.status?.toUpperCase() === "PENDING" && (
                     <>
                       <DropdownMenuItem
