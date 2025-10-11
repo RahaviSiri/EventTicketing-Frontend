@@ -136,12 +136,11 @@ const AddEvent = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="block">
                 <span className="block text-sm mb-1">Start Date</span>
-                <input type="date" name="startDate" value={form.startDate || ''} onChange={handleChange} className="w-full rounded-md border p-2" required/>
+                <input type="date" name="startDate" value={form.startDate || ''} onChange={handleChange} className="w-full rounded-md border p-2" />
               </label>
               <label className="block">
                 <span className="block text-sm mb-1">Start Time</span>
                 <input
-                  required
                   type="time"
                   name="startTime"
                   value={form.startTime || ""}
@@ -157,7 +156,7 @@ const AddEvent = () => {
               </label>
               <label className="block">
                 <span className="block text-sm mb-1">End Date</span>
-                <input type="date" name="endDate" value={form.endDate || ''} onChange={handleChange} className="w-full rounded-md border p-2" required/>
+                <input type="date" name="endDate" value={form.endDate || ''} onChange={handleChange} className="w-full rounded-md border p-2"/>
               </label>
               <label className="block">
                 <span className="block text-sm mb-1">End Time</span>
@@ -168,7 +167,6 @@ const AddEvent = () => {
                   onChange={handleChange}
                   className="w-full rounded-md border p-2"
                   step="1"
-                  required
                 />
                 {form.endTime && (
                   <span className="text-xs text-gray-500 ml-2">

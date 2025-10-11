@@ -32,12 +32,13 @@ const OrderDetails = () => {
 
   const fetchOrders = async (eventID, page = 0) => {
     if (!eventID) return;
+    console.log(eventID);
     try {
-      const res = await api.getOrdersByEvent(eventID, page, size);
-      if (res && Array.isArray(res.content)) {
-        console.log(res);
-        setOrders(res.content);
-        setTotalPages(res.totalPages || 1);
+      const data = await api.getOrdersByEvent(eventID, page, size);
+      if (data && Array.isArray(data.content)) {
+        console.log(data);
+        setOrders(data.content);
+        setTotalPages(data.totalPages || 1);
       } else {
         // fallback if backend sends plain array
         console.log("ressss");
