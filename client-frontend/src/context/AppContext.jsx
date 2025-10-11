@@ -14,7 +14,9 @@ export const AppContextProvider = ({ children }) => {
 
     const [role, setRole] = useState(null);
     const [userID, setUserID] = useState();
-    const [token, setToken] = useState(localStorage.getItem("EventToken") || null);
+    const savedToken = localStorage.getItem("EventToken");
+    const [token, setToken] = useState(savedToken && savedToken !== "null" ? savedToken : null);
+
 
     const getRole = async () => {
         if (!token) return;
@@ -34,10 +36,22 @@ export const AppContextProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        getRole();
-        getUserID();
-        console.log("Role:", role);
-        console.log("UserID:", userID);
+        if (!token) {
+            console.log("No token found — skipping protected API calls.");
+            return;
+        }
+
+        (async () => {
+            try {
+                await getRole();
+                await getUserID();
+            } catch (err) {
+                console.error("Error while fetching user info:", err);
+                // optional: clear invalid token
+                localStorage.removeItem("EventToken");
+                setToken(null);
+            }
+        })();
     }, [token]);
 
     const changeUserRole = async (roleUser) => {
@@ -89,7 +103,7 @@ export const AppContextProvider = ({ children }) => {
         ticketServiceURL,
         orderServiceURL,
         notificationServiceURL,
-        
+
     };
 
     return (
