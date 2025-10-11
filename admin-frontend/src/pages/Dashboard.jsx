@@ -93,14 +93,14 @@ export default function Dashboard() {
               <span>Manage Users</span>
             </Button>
 
-            <Button
+            {/* <Button
               variant="outline"
               size="sm"
               onClick={() => navigate("/reports")}
               className="flex items-center space-x-2"
             >
               <span>Platform Reports</span>
-            </Button>
+            </Button> */}
           </div>
 
           <DropdownMenu>
