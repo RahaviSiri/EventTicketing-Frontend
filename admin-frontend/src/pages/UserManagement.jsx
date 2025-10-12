@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,8 +24,8 @@ import {
   CheckCircle,
   XCircle,
 } from "lucide-react";
+import { AppContext } from "../context/AppContext";
 
-const API_BASE_URL = "http://localhost:8080/api/admin";
 
 export default function UserManagement() {
   const [activeFilter, setActiveFilter] = useState("Organizers");
@@ -34,6 +34,7 @@ export default function UserManagement() {
   const [data, setData] = useState([]);
   const [totalElements, setTotalElements] = useState(0);
   const itemsPerPage = 10;
+  const { adminServiceURL } = useContext(AppContext);
 
   const filterButtons = ["Organizers", "Events", "PendingEvents"];
 
@@ -49,25 +50,32 @@ export default function UserManagement() {
 
       let endpoint = "";
       if (activeFilter === "Organizers") {
-        endpoint = `${API_BASE_URL}/userManagement/organizers?page=${
-          currentPage - 1
-        }&size=${itemsPerPage}`;
+        endpoint = `${adminServiceURL}/userManagement/organizers?page=${currentPage - 1
+          }&size=${itemsPerPage}`;
       } else if (activeFilter === "Events") {
-        endpoint = `${API_BASE_URL}/userManagement/events?page=${
-          currentPage - 1
-        }&size=${itemsPerPage}`;
+        endpoint = `${adminServiceURL}/userManagement/events?page=${currentPage - 1
+          }&size=${itemsPerPage}`;
       } else if (activeFilter === "PendingEvents") {
-        endpoint = `${API_BASE_URL}/userManagement/pendingEvents?page=${
-          currentPage - 1
-        }&size=${itemsPerPage}`;
+        endpoint = `${adminServiceURL}/userManagement/pendingEvents?page=${currentPage - 1
+          }&size=${itemsPerPage}`;
       }
 
-      const response = await axios.get(endpoint, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await fetch(endpoint, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
 
-      setData(response.data.content || []);
-      setTotalElements(response.data.totalElements || 0);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch data. Status: ${res.status}`);
+      }
+
+      const data = await res.json();
+      setData(data.content || []);
+      setTotalElements(data.totalElements || 0);
+
     } catch (error) {
       console.error("Error fetching data:", error);
       if (error.response?.status === 401) {
@@ -88,18 +96,26 @@ export default function UserManagement() {
     try {
       let url = "";
       if (action === "Approve") {
-        url = `${API_BASE_URL}/events/${eventId}/approve`;
+        url = `${adminServiceURL}/events/${eventId}/approve`;
       } else if (action === "Reject") {
-        url = `${API_BASE_URL}/events/${eventId}/reject`;
+        url = `${adminServiceURL}/events/${eventId}/reject`;
       }
 
       if (!url) return;
 
-      await axios.put(
-        url,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}), // empty object to match axios
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to ${action.toLowerCase()} event. Status: ${res.status}`);
+      }
+
 
       alert(`Event ${action.toLowerCase()}d successfully.`);
       fetchData(); // Refresh the table after update
@@ -241,9 +257,9 @@ export default function UserManagement() {
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem
                     onClick={() =>
-                      (window.location.href = `/event-details/EVT${String(
-                        item.id
-                      ).padStart(3, "0")}`)
+                    (window.location.href = `/event-details/EVT${String(
+                      item.id
+                    ).padStart(3, "0")}`)
                     }
                   >
                     <Eye className="mr-2 h-4 w-4" />

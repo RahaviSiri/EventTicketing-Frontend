@@ -3,7 +3,7 @@
 // 2️⃣ Used the actual eventId format (remove “EVT###” prefix parsing from navigate links)
 // 3️⃣ Added backend field handling: event.organizerName / organizerEmail display
 
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
@@ -19,14 +19,15 @@ import {
   FileText,
   Mail,
 } from "lucide-react";
+import { AppContext } from "../context/AppContext";
 
-const API_BASE_URL = "http://localhost:8080/api/admin";
 
 export default function EventDetails() {
   const { eventId } = useParams(); // e.g., 8
   const navigate = useNavigate();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { adminServiceURL } = useContext(AppContext);
 
   useEffect(() => {
     const fetchEventDetails = async () => {
@@ -41,15 +42,26 @@ export default function EventDetails() {
         // ✅ Correct API endpoint (matches backend)
         const numericId = eventId.replace(/\D/g, ""); // convert EVT006 → 6
 
-        const response = await axios.get(
-          `${API_BASE_URL}/events/${numericId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        try {
+          const res = await fetch(`${adminServiceURL}/events/${numericId}`, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
 
-        console.log("Event Details:", response.data);
-        setEvent(response.data);
+          if (!res.ok) {
+            throw new Error(`Failed to fetch event. Status: ${res.status}`);
+          }
+
+          const data = await res.json();
+          console.log("Event Details:", data);
+          setEvent(data);
+        } catch (error) {
+          console.error("❌ Error fetching event details:", error);
+        }
+
       } catch (error) {
         console.error("Error fetching event details:", error);
         if (error.response?.status === 404) {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import {
   DollarSign,
@@ -35,33 +35,42 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import StatCard from "@/components/StatCard";
+import { AppContext } from "../context/AppContext";
 
 export default function Dashboard() {
   const [dateFilter, setDateFilter] = useState("Last 7 days");
   const [dashboardData, setDashboardData] = useState(null);
   const navigate = useNavigate();
-
-   const rangeMap = {
-     "Last 7 days": "last7days",
-     "This Month": "thisMonth",
-     "Last 3 Months": "last3months",
-     "This Year": "thisYear",
+  const { adminServiceURL } = useContext(AppContext);
+  const rangeMap = {
+    "Last 7 days": "last7days",
+    "This Month": "thisMonth",
+    "Last 3 Months": "last3months",
+    "This Year": "thisYear",
   };
-  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const rangeParam = rangeMap[dateFilter] || "last7days";
         const token = localStorage.getItem("AdminToken");
-        const res = await axios.get(
-          `http://localhost:8080/api/admin/dashboard?range=${rangeParam}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`, 
-            },
-          }
-        );
-        setDashboardData(res.data);
+        console.log(token);
+        console.log("Fetching dashboard data with range:", rangeParam);
+        const res = await fetch(`${adminServiceURL}/dashboard?range=${rangeParam}`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error(`Request failed with status ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        setDashboardData(data);
       } catch (err) {
         console.error("Error fetching dashboard data", err);
       }
