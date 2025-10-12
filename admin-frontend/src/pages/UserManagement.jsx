@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,176 +16,267 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import {
   Search,
   MoreHorizontal,
   Eye,
   CheckCircle,
   XCircle,
-  Ban,
-  Trash2,
 } from "lucide-react";
 
-// Mock data for users
-const mockUsers = [
-  {
-    id: 1,
-    name: "John Doe",
-    email: "john.doe@example.com",
-    role: "Organizer",
-    status: "Active",
-    avatar: "/api/placeholder/32/32",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    email: "jane.smith@example.com",
-    role: "Attendee",
-    status: "Active",
-    avatar: "/api/placeholder/32/32",
-  },
-  {
-    id: 3,
-    name: "Mike Johnson",
-    email: "mike.johnson@example.com",
-    role: "Organizer",
-    status: "Pending",
-    avatar: "/api/placeholder/32/32",
-  },
-  {
-    id: 4,
-    name: "Sarah Wilson",
-    email: "sarah.wilson@example.com",
-    role: "Attendee",
-    status: "Suspended",
-    avatar: "/api/placeholder/32/32",
-  },
-  {
-    id: 5,
-    name: "David Brown",
-    email: "david.brown@example.com",
-    role: "Organizer",
-    status: "Active",
-    avatar: "/api/placeholder/32/32",
-  },
-  {
-    id: 6,
-    name: "Lisa Davis",
-    email: "lisa.davis@example.com",
-    role: "Attendee",
-    status: "Pending",
-    avatar: "/api/placeholder/32/32",
-  },
-  {
-    id: 7,
-    name: "Tom Anderson",
-    email: "tom.anderson@example.com",
-    role: "Organizer",
-    status: "Active",
-    avatar: "/api/placeholder/32/32",
-  },
-  {
-    id: 8,
-    name: "Emily Taylor",
-    email: "emily.taylor@example.com",
-    role: "Attendee",
-    status: "Active",
-    avatar: "/api/placeholder/32/32",
-  },
-];
+const API_BASE_URL = "http://localhost:8080/api/admin";
 
 export default function UserManagement() {
-  const [activeFilter, setActiveFilter] = useState("All Users");
+  const [activeFilter, setActiveFilter] = useState("Organizers");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const [data, setData] = useState([]);
+  const [totalElements, setTotalElements] = useState(0);
+  const itemsPerPage = 10;
 
-  const filterButtons = [
-    "All Users",
-    "Attendees",
-    "Organizers",
-    "Pending Approval",
-  ];
+  const filterButtons = ["Organizers", "Events", "PendingEvents"];
 
-  // Filter users based on active filter and search query
-  const filteredUsers = mockUsers.filter((user) => {
-    const matchesFilter =
-      activeFilter === "All Users" ||
-      (activeFilter === "Attendees" && user.role === "Attendee") ||
-      (activeFilter === "Organizers" && user.role === "Organizer") ||
-      (activeFilter === "Pending Approval" && user.status === "Pending");
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFilter, currentPage]);
 
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase());
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem("AdminToken");
+      if (!token) return;
 
-    return matchesFilter && matchesSearch;
+      let endpoint = "";
+      if (activeFilter === "Organizers") {
+        endpoint = `${API_BASE_URL}/userManagement/organizers?page=${
+          currentPage - 1
+        }&size=${itemsPerPage}`;
+      } else if (activeFilter === "Events") {
+        endpoint = `${API_BASE_URL}/userManagement/events?page=${
+          currentPage - 1
+        }&size=${itemsPerPage}`;
+      } else if (activeFilter === "PendingEvents") {
+        endpoint = `${API_BASE_URL}/userManagement/pendingEvents?page=${
+          currentPage - 1
+        }&size=${itemsPerPage}`;
+      }
+
+      const response = await axios.get(endpoint, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setData(response.data.content || []);
+      setTotalElements(response.data.totalElements || 0);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      if (error.response?.status === 401) {
+        alert("Session expired. Please log in again.");
+        window.location.href = "/admin-login";
+      }
+    }
+  };
+
+  const handleActionClick = async (action, eventId) => {
+    const token = localStorage.getItem("AdminToken");
+    if (!token) {
+      alert("Session expired. Please log in again.");
+      window.location.href = "/admin-login";
+      return;
+    }
+
+    try {
+      let url = "";
+      if (action === "Approve") {
+        url = `${API_BASE_URL}/events/${eventId}/approve`;
+      } else if (action === "Reject") {
+        url = `${API_BASE_URL}/events/${eventId}/reject`;
+      }
+
+      if (!url) return;
+
+      await axios.put(
+        url,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      alert(`Event ${action.toLowerCase()}d successfully.`);
+      fetchData(); // Refresh the table after update
+    } catch (error) {
+      console.error(`Error trying to ${action.toLowerCase()} event:`, error);
+      alert(`Failed to ${action.toLowerCase()} event.`);
+    }
+  };
+
+  const filteredData = data.filter((item) => {
+    const query = searchQuery.toLowerCase();
+    if (activeFilter === "Organizers") {
+      return (
+        item.name?.toLowerCase().includes(query) ||
+        item.email?.toLowerCase().includes(query)
+      );
+    } else {
+      return (
+        item.eventName?.toLowerCase().includes(query) ||
+        item.organizerName?.toLowerCase().includes(query) ||
+        item.organizerEmail?.toLowerCase().includes(query)
+      );
+    }
   });
 
-  // Pagination logic
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedUsers = filteredUsers.slice(
+  const paginatedData = filteredData.slice(
     startIndex,
     startIndex + itemsPerPage
   );
 
   const getStatusBadge = (status) => {
-    switch (status) {
-      case "Active":
+    switch (status?.toUpperCase()) {
+      case "ACTIVE":
         return (
-          <Badge
-            variant="default"
-            className="bg-green-100 text-green-800 border-green-200"
-          >
+          <Badge className="bg-green-100 text-green-800 border-green-200">
             Active
           </Badge>
         );
-      case "Pending":
+      case "PENDING":
         return (
-          <Badge
-            variant="secondary"
-            className="bg-yellow-100 text-yellow-800 border-yellow-200"
-          >
+          <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
             Pending
           </Badge>
         );
-      case "Suspended":
+      case "APPROVED":
         return (
-          <Badge
-            variant="destructive"
-            className="bg-red-100 text-red-800 border-red-200"
-          >
-            Suspended
+          <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+            Approved
+          </Badge>
+        );
+      case "REJECTED":
+        return (
+          <Badge className="bg-red-100 text-red-800 border-red-200">
+            Rejected
+          </Badge>
+        );
+      case "CANCELLED":
+        return (
+          <Badge className="bg-gray-100 text-gray-700 border-gray-200">
+            Cancelled
           </Badge>
         );
       default:
         return (
-          <Badge variant="outline" className="border-gray-300 text-gray-700">
-            {status}
-          </Badge>
+          <Badge className="border-gray-300 text-gray-700">{status}</Badge>
         );
     }
   };
 
-  const handleActionClick = (action, userId) => {
-    console.log(`${action} clicked for user ${userId}`);
-    // Implement actual action logic here
+  const renderTableHeaders = () => {
+    if (activeFilter === "Organizers") {
+      return (
+        <TableRow className="bg-gray-50">
+          <TableHead>ID</TableHead>
+          <TableHead>Name</TableHead>
+          <TableHead>Email</TableHead>
+          <TableHead>Active Events</TableHead>
+          <TableHead>Pending Events</TableHead>
+        </TableRow>
+      );
+    } else {
+      return (
+        <TableRow className="bg-gray-50">
+          <TableHead>Event ID</TableHead>
+          <TableHead>Event Name</TableHead>
+          <TableHead>Organizer ID</TableHead>
+          <TableHead>Organizer Name</TableHead>
+          <TableHead>Organizer Email</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
+        </TableRow>
+      );
+    }
+  };
+
+  const renderTableRows = () => {
+    if (paginatedData.length === 0) {
+      return (
+        <TableRow>
+          <TableCell
+            colSpan={activeFilter === "Organizers" ? 5 : 7}
+            className="text-center py-8"
+          >
+            <div className="text-gray-500">
+              No {activeFilter.toLowerCase()} found matching your criteria
+            </div>
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    return paginatedData.map((item) => (
+      <TableRow key={item.id} className="hover:bg-gray-50">
+        {activeFilter === "Organizers" ? (
+          <>
+            <TableCell>{item.id}</TableCell>
+            <TableCell>{item.name}</TableCell>
+            <TableCell>{item.email}</TableCell>
+            <TableCell>{item.activeEventsCount}</TableCell>
+            <TableCell>{item.pendingEventsCount}</TableCell>
+          </>
+        ) : (
+          <>
+            <TableCell>{item.id}</TableCell>
+            <TableCell>{item.eventName}</TableCell>
+            <TableCell>{item.organizerId ?? "N/A"}</TableCell>
+            <TableCell>{item.organizerName ?? "N/A"}</TableCell>
+            <TableCell>{item.organizerEmail ?? "N/A"}</TableCell>
+            <TableCell>{getStatusBadge(item.status)}</TableCell>
+            <TableCell className="text-right">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem
+                    onClick={() =>
+                      (window.location.href = `/event-details/EVT${String(
+                        item.id
+                      ).padStart(3, "0")}`)
+                    }
+                  >
+                    <Eye className="mr-2 h-4 w-4" />
+                    View Event
+                  </DropdownMenuItem>
+
+                  {item.status?.toUpperCase() === "PENDING" && (
+                    <>
+                      <DropdownMenuItem
+                        onClick={() => handleActionClick("Approve", item.id)}
+                      >
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Approve
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleActionClick("Reject", item.id)}
+                      >
+                        <XCircle className="mr-2 h-4 w-4" />
+                        Reject
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </TableCell>
+          </>
+        )}
+      </TableRow>
+    ));
   };
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-gray-900">
           User Management
@@ -194,9 +286,7 @@ export default function UserManagement() {
         </p>
       </div>
 
-      {/* Filters and Search */}
       <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-        {/* Filter Buttons */}
         <div className="flex flex-wrap gap-2">
           {filterButtons.map((filter) => (
             <Button
@@ -207,18 +297,20 @@ export default function UserManagement() {
                 setActiveFilter(filter);
                 setCurrentPage(1);
               }}
-              className="text-sm"
             >
               {filter}
             </Button>
           ))}
         </div>
 
-        {/* Search Input */}
         <div className="relative w-full md:w-80">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
           <Input
-            placeholder="Search users by name or email..."
+            placeholder={
+              activeFilter === "Organizers"
+                ? "Search organizers by name or email..."
+                : "Search events by name or organizer..."
+            }
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -229,166 +321,39 @@ export default function UserManagement() {
         </div>
       </div>
 
-      {/* Data Table */}
       <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
         <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-50">
-              <TableHead className="w-16">Avatar</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedUsers.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-8">
-                  <div className="text-gray-500">
-                    No users found matching your criteria
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              paginatedUsers.map((user) => (
-                <TableRow key={user.id} className="hover:bg-gray-50">
-                  <TableCell>
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback>
-                        {user.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                  </TableCell>
-                  <TableCell className="font-medium text-gray-900">
-                    {user.name}
-                  </TableCell>
-                  <TableCell className="text-gray-600">{user.email}</TableCell>
-                  <TableCell>{user.role}</TableCell>
-                  <TableCell>{getStatusBadge(user.status)}</TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem
-                          onClick={() =>
-                            handleActionClick("View Profile", user.id)
-                          }
-                        >
-                          <Eye className="mr-2 h-4 w-4" />
-                          View Profile
-                        </DropdownMenuItem>
-                        {user.status === "Pending" && (
-                          <>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                handleActionClick("Approve", user.id)
-                              }
-                            >
-                              <CheckCircle className="mr-2 h-4 w-4" />
-                              Approve
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                handleActionClick("Reject", user.id)
-                              }
-                            >
-                              <XCircle className="mr-2 h-4 w-4" />
-                              Reject
-                            </DropdownMenuItem>
-                          </>
-                        )}
-                        {user.status === "Active" && (
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleActionClick("Suspend", user.id)
-                            }
-                          >
-                            <Ban className="mr-2 h-4 w-4" />
-                            Suspend
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem
-                          onClick={() => handleActionClick("Delete", user.id)}
-                          className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
+          <TableHeader>{renderTableHeaders()}</TableHeader>
+          <TableBody>{renderTableRows()}</TableBody>
         </Table>
       </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  className={
-                    currentPage === 1
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer"
-                  }
-                />
-              </PaginationItem>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (page) => (
-                  <PaginationItem key={page}>
-                    <PaginationLink
-                      onClick={() => setCurrentPage(page)}
-                      isActive={currentPage === page}
-                      className="cursor-pointer"
-                    >
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                )
-              )}
-              <PaginationItem>
-                <PaginationNext
-                  onClick={() =>
-                    setCurrentPage(Math.min(totalPages, currentPage + 1))
-                  }
-                  className={
-                    currentPage === totalPages
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer"
-                  }
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+        <div className="flex justify-center mt-4 space-x-2">
+          <Button
+            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          {[...Array(totalPages)].map((_, idx) => (
+            <Button
+              key={idx}
+              variant={currentPage === idx + 1 ? "default" : "outline"}
+              onClick={() => setCurrentPage(idx + 1)}
+            >
+              {idx + 1}
+            </Button>
+          ))}
+          <Button
+            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
         </div>
       )}
-
-      {/* Results Summary */}
-      <div className="text-sm text-gray-600 text-center">
-        Showing {startIndex + 1} to{" "}
-        {Math.min(startIndex + itemsPerPage, filteredUsers.length)} of{" "}
-        {filteredUsers.length} users
-      </div>
     </div>
   );
 }
