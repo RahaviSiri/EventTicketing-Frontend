@@ -4,6 +4,7 @@ const AppContext = createContext();
 
 const AppContextProvider = ({ children }) => {
   const userServiceURL = "http://localhost:8080/api/users";
+  const adminServiceURL = "http://localhost:8080/api/admin";
   const [token, setToken] = useState(null);
 
   useEffect(() => {
@@ -19,7 +20,7 @@ const AppContextProvider = ({ children }) => {
   };
 
   return (
-    <AppContext.Provider value={{ token, setToken, userServiceURL, logout }}>
+    <AppContext.Provider value={{ token, setToken, userServiceURL, logout,adminServiceURL }}>
       {children}
     </AppContext.Provider>
   );
