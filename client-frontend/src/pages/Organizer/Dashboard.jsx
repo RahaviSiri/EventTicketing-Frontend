@@ -8,11 +8,14 @@ import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const { userID } = useContext(AppContext);
-  const [events, setEvents] = useState([]);
   const { api } = useContext(HeaderContext);
+  // ---- States ----
+  const [events, setEvents] = useState([]);
   const [revenue, setRevenue] = useState(0);
   const [ticketCount, setTicketCount] = useState(0);
   const [soldTicketsMap, setSoldTicketsMap] = useState({});
+  const [loading, setLoading] = useState(true);
+
   const navigate = useNavigate();
 
   const fetchEvents = async () => {
@@ -20,8 +23,16 @@ const Dashboard = () => {
     try {
       const data = await api.getEventsByOrganizer(userID);
       // console.log("Data: " + data);
+      // Ensure it's an array
+      if (!Array.isArray(data)) {
+        console.error("Unexpected response:", data);
+        setEvents([]);
+        return;
+      }
 
       // Sort events by startDate (earliest first)
+      // const validData = Array.isArray(data) ? data : [];
+
       const sortedEvents = [...data].sort(
         (a, b) => new Date(a.event.startDate) - new Date(b.event.startDate)
       );
@@ -30,18 +41,19 @@ const Dashboard = () => {
       console.log("Fetched events:", sortedEvents);
     } catch (error) {
       console.error("Error fetching events:", error);
+      setEvents([]);
     }
   };
 
   const fetchRevenue = async () => {
-    if (events.length === 0) return;
-
+    if (!api || events.length === 0) return;
     const ids = events.map((item) => item.event.id);
     try {
       const total = await api.getRevenueByEventIds(ids);
       setRevenue(total);
     } catch (error) {
       console.error("Error fetching revenue by event IDs:", error);
+      setRevenue(0);
     }
   };
 
@@ -58,15 +70,19 @@ const Dashboard = () => {
       setTicketCount(count);
     } catch (error) {
       console.error("Error calculating ticket count:", error);
+      setTicketCount(0);
     }
   };
 
   const getTicketCountForEvent = async (eventId) => {
+    if (!api) return 0;
     try {
       const seating = await api.getSeatingByEvent(eventId);
+      if (!seating || !seating.layoutJson) return 0;
 
       // Parse layoutJson into a real object
       const layout = JSON.parse(seating.layoutJson);
+      if (!layout.seats) return 0;
 
       // Get booked seats
       const bookedSeats = layout.seats.filter(seat => seat.status === "booked");
@@ -83,25 +99,26 @@ const Dashboard = () => {
   }, [userID, api]);
 
   useEffect(() => {
-  fetchTicketCount();
-}, [soldTicketsMap]);
+    fetchTicketCount();
+  }, [soldTicketsMap]);
 
   useEffect(() => {
-    if (events.length > 0) {
-      fetchRevenue();
+    const loadAllData = async () => {
+      if (events.length > 0) {
+        await fetchRevenue();
 
-      // fetch sold tickets for each event
-      const loadSoldTickets = async () => {
+        // Fetch sold tickets for each event
         const counts = {};
         for (const item of events) {
           const count = await getTicketCountForEvent(item.event.id);
           counts[item.event.id] = count;
         }
         setSoldTicketsMap(counts);
-      };
+      }
+      setLoading(false);
+    };
 
-      loadSoldTickets();
-    }
+    loadAllData();
   }, [events, api]);
 
 
@@ -110,6 +127,15 @@ const Dashboard = () => {
     (item) => new Date(item.event.endDate) >= new Date()
   );
   const earliestEvent = upcomingEvents.length > 0 ? upcomingEvents[0] : null;
+
+  // ---- Loading State ----
+  if (loading) {
+    return (
+      <div className="p-8 text-center text-gray-500">
+        Loading your dashboard...
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">

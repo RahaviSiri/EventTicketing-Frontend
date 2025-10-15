@@ -3,8 +3,9 @@ import React, { createContext, useState, useEffect } from "react";
 const AppContext = createContext();
 
 const AppContextProvider = ({ children }) => {
-  const userServiceURL = "http://localhost:8080/api/users";
-  const adminServiceURL = "http://localhost:8080/api/admin";
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const userServiceURL = `${BASE_URL}/api/users`;
+  const adminServiceURL = `${BASE_URL}/api/admin`;
   const [token, setToken] = useState(null);
 
   useEffect(() => {
