@@ -3,14 +3,17 @@ import React, { createContext, useEffect, useState } from "react";
 export const AppContext = createContext();
 
 export const AppContextProvider = ({ children }) => {
-    const eventServiceURL = 'http://localhost:8080/api/events';
-    const userServiceURL = "http://localhost:8080/api/users";
-    const seatingServiceURL = "http://localhost:8080/api/seating-charts";
-    const discountServiceURL = "http://localhost:8080/api/discounts";
-    const paymentServiceURL = "http://localhost:8080/api/payments";
-    const ticketServiceURL = "http://localhost:8080/api/tickets";
-    const orderServiceURL = "http://localhost:8080/api/orders";
-    const notificationServiceURL = "http://localhost:8080/api/notifications";
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+    const eventServiceURL = `${BASE_URL}/api/events`;
+    const userServiceURL = `${BASE_URL}/api/users`;
+    const seatingServiceURL = `${BASE_URL}/api/seating-charts`;
+    const discountServiceURL = `${BASE_URL}/api/discounts`;
+    const paymentServiceURL = `${BASE_URL}/api/payments`;
+    const ticketServiceURL = `${BASE_URL}/api/tickets`;
+    const orderServiceURL = `${BASE_URL}/api/orders`;
+    const notificationServiceURL = `${BASE_URL}/api/notifications`;
+
 
     const [role, setRole] = useState(null);
     const [userID, setUserID] = useState();
