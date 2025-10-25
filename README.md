@@ -28,7 +28,6 @@ There are two frontend portals:
 |------------|------|
 | 🎫 Client Frontend | https://client-frontend-pp19.onrender.com |
 | 🧑‍💼 Admin Frontend | https://admin-frontend-040x.onrender.com |
-| ☁️ API Gateway (Backend) | https://api-gateway-ip5n.onrender.com |
 
 ---
 
@@ -83,26 +82,36 @@ There are two frontend portals:
 - Session persistence via localStorage  
 
 
-## 🧱 Project Structure
+
+That gives consistent styling for command snippets.  
+Otherwise, your current version is already great!
+
+---
+
+### 📁 **Project Structure Section**
+```md
+```bash
+# Project Directory Structure
 EventEase-Frontend/
-├── public/
-│ └── images, icons, and manifest files
+├── public/                     # Static public files (images, icons, manifest)
 ├── src/
-│ ├── assets/ # Static images & icons
-│ ├── components/ # Shared UI components
-│ ├── context/ # React context for global state
-│ ├── hooks/ # Custom React hooks
-│ ├── pages/ # Route-based pages
-│ ├── services/ # Axios API service functions
-│ ├── utils/ # Helper functions (JWT, validation, etc.)
-│ ├── App.jsx # Root component
-│ └── main.jsx # Application entry point
+│   ├── assets/                 # Static images & icons
+│   ├── components/             # Shared UI components
+│   ├── context/                # React global state context
+│   ├── hooks/                  # Custom React hooks
+│   ├── pages/                  # Route-based pages
+│   ├── services/               # Axios API service functions
+│   ├── utils/                  # Helper functions (JWT, validation, etc.)
+│   ├── App.jsx                 # Root component
+│   └── main.jsx                # Application entry point
 ├── package.json
 ├── vite.config.js
 ├── tailwind.config.js
 └── .env
 
+
 ## ⚙️ Environment Configuration
+
 Create a `.env` file in the root directory:
 
 ```bash
@@ -110,9 +119,8 @@ VITE_API_GATEWAY_URL=https://api-gateway-ip5n.onrender.com
 VITE_STRIPE_PUBLIC_KEY=pk_live_************************
 VITE_ENV=production
 
----
 
-## ▶️ Development Mode
+▶️ Development Mode
 npm install
 npm run dev
 
