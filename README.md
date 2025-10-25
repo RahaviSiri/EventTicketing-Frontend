@@ -108,7 +108,7 @@ EventEase-Frontend/
 ├── vite.config.js
 ├── tailwind.config.js
 └── .env
-
+```
 
 ## ⚙️ Environment Configuration
 
@@ -118,13 +118,18 @@ Create a `.env` file in the root directory:
 VITE_API_GATEWAY_URL=https://api-gateway-ip5n.onrender.com
 VITE_STRIPE_PUBLIC_KEY=pk_live_************************
 VITE_ENV=production
+```
 
 
-▶️ Development Mode
+## ▶️ Development Mode
+```bash
 npm install
 npm run dev
+```
 
 Open in your browser: http://localhost:5173
 
 ## 🏗️ Production Build
+```bash
 npm run build
+```
